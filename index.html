@@ -1050,6 +1050,58 @@
     .tab-btn { padding: 0.9rem 1rem; font-size: 0.88rem; }
     .pipeline-card, .gh-explainer { padding: 1.5rem; }
   }
+
+  /* ============ ARCHITECTURE EMBED ============ */
+  .architecture-embed {
+    position: relative;
+    margin-top: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--cream);
+    box-shadow: 0 4px 14px rgba(44, 40, 38, 0.06);
+  }
+  .architecture-embed iframe {
+    display: block;
+    width: 100%;
+    height: 620px;
+    border: 0;
+  }
+  .architecture-fullscreen-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    background: var(--burgundy);
+    color: var(--cream) !important;
+    padding: 10px 18px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border-radius: 3px;
+    text-decoration: none !important;
+    box-shadow: 0 6px 16px rgba(44, 40, 38, 0.18);
+    transition: background 150ms, transform 150ms;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .architecture-fullscreen-btn:hover {
+    background: var(--burgundy-dark);
+    transform: translateY(-1px);
+  }
+  .architecture-caption {
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    margin-top: 0.7rem;
+    font-style: italic;
+  }
+  @media (max-width: 720px) {
+    .architecture-embed iframe { height: 480px; }
+    .architecture-fullscreen-btn { padding: 8px 14px; font-size: 0.7rem; }
+  }
+
 </style>
 </head>
 <body>
@@ -1495,7 +1547,20 @@
       <p><strong>Standard du marché.</strong> Si un nouveau prestataire reprend une partie du projet, il connaît GitHub. Pas de formation, pas de système maison à découvrir.</p>
     </div>
 
-  </section>
+      <div class="gh-explainer">
+      <h3>Carte interactive du système</h3>
+      <p>Une vue d'ensemble cliquable de tout le pipeline : les sources de données, le moteur Python, les pages porteurs, la diffusion Mailchimp. Chaque bloc s'ouvre dans un panneau de détails. Pour explorer confortablement, ouvrez la carte en plein écran.</p>
+
+      <div class="architecture-embed">
+        <a class="architecture-fullscreen-btn" href="architecture.html" target="_blank" rel="noopener">
+          Plein écran ↗
+        </a>
+        <iframe src="architecture.html" loading="lazy" title="Architecture interactive Body Pass"></iframe>
+      </div>
+      <p class="architecture-caption">Cliquez sur un bloc pour ouvrir son détail. Molette pour zoomer, glisser pour déplacer.</p>
+    </div>
+
+</section>
 
   <div class="footer-section">
     <img src="assets/logo.png" alt="Body Pass">

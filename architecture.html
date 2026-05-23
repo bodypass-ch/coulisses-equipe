@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Body Pass — Architecture GitHub interactive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Source+Sans+Pro:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FBF7F1;
+    --cream-deep: #F2EBDF;
+    --burgundy: #A3695B;
+    --burgundy-dark: #8B5448;
+    --champagne: #C2B59B;
+    --text: #2C2826;
+    --text-soft: #54504E;
+    --text-mute: #7A7470;
+    --divider: #E5DBC8;
+    --bg-source: #E8DFCE;
+    --bg-orch: #C2B59B;
+    --bg-engine: #A3695B;
+    --bg-front: #F2EBDF;
+    --bg-email: #54504E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: 'Source Sans Pro', -apple-system, sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    overflow: hidden;
+  }
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: rgba(251, 247, 241, 0.96);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--divider);
+    padding: 14px 32px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header .brand {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 18px;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  header .brand em {
+    color: var(--burgundy);
+    font-style: italic;
+  }
+  header .legend {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--text-mute);
+  }
+  header .legend .dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  header .controls {
+    display: flex; gap: 8px;
+  }
+  header button {
+    background: transparent;
+    border: 1px solid var(--divider);
+    color: var(--text-soft);
+    padding: 6px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: inherit;
+    transition: all 150ms;
+  }
+  header button:hover {
+    background: var(--burgundy);
+    color: white;
+    border-color: var(--burgundy);
+  }
+
+  #canvas {
+    width: 100vw;
+    height: 100vh;
+    cursor: grab;
+    padding-top: 60px;
+  }
+  #canvas.dragging { cursor: grabbing; }
+  #canvas svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .node-group { cursor: pointer; }
+  .node-rect {
+    transition: filter 200ms, transform 200ms;
+  }
+  .node-group:hover .node-rect {
+    filter: drop-shadow(0 8px 16px rgba(44, 40, 38, 0.18));
+  }
+  .node-label {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 500;
+    pointer-events: none;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .node-sub {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    pointer-events: none;
+    text-anchor: middle;
+  }
+  .node-detail {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-size: 12px;
+    pointer-events: none;
+    text-anchor: middle;
+    fill: var(--text-soft);
+  }
+  .arrow {
+    fill: none;
+    stroke: var(--burgundy);
+    stroke-width: 2;
+    marker-end: url(#arrowhead);
+    opacity: 0.7;
+  }
+  .arrow-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    fill: var(--text-mute);
+    font-family: 'Source Sans Pro', sans-serif;
+    text-anchor: middle;
+  }
+  .section-band {
+    fill: none;
+    stroke: var(--divider);
+    stroke-dasharray: 4 4;
+  }
+  .section-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 14px;
+    font-style: italic;
+    fill: var(--text-mute);
+  }
+
+  /* Side panel */
+  #panel {
+    position: fixed;
+    top: 60px;
+    right: 0;
+    bottom: 0;
+    width: 440px;
+    background: white;
+    border-left: 1px solid var(--divider);
+    padding: 32px 28px;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -10px 0 30px rgba(44, 40, 38, 0.08);
+    z-index: 50;
+  }
+  #panel.open { transform: translateX(0); }
+  #panel .close {
+    position: absolute;
+    top: 18px; right: 18px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 22px;
+    color: var(--text-mute);
+    line-height: 1;
+  }
+  #panel .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--burgundy);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  #panel h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 400;
+    font-size: 28px;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  #panel .repo {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 12px;
+    color: var(--text-mute);
+    margin-bottom: 22px;
+    word-break: break-all;
+  }
+  #panel h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--text);
+    margin: 22px 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--divider);
+  }
+  #panel p, #panel li {
+    font-size: 14px;
+    color: var(--text-soft);
+    line-height: 1.6;
+    margin-bottom: 6px;
+  }
+  #panel ul { padding-left: 18px; }
+  #panel code {
+    font-family: ui-monospace, monospace;
+    background: var(--cream-deep);
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 12px;
+    color: var(--burgundy-dark);
+  }
+  #panel pre {
+    background: var(--cream-deep);
+    border: 1px solid var(--divider);
+    padding: 14px;
+    border-radius: 2px;
+    font-size: 12px;
+    font-family: ui-monospace, monospace;
+    overflow-x: auto;
+    margin: 10px 0;
+    color: var(--text);
+  }
+  #panel a {
+    color: var(--burgundy);
+    text-decoration: none;
+    border-bottom: 1px solid var(--burgundy);
+  }
+  #panel .pill {
+    display: inline-block;
+    background: var(--cream-deep);
+    color: var(--burgundy);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-right: 4px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  /* Bottom hint */
+  .hint {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--divider);
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--text-mute);
+    box-shadow: 0 4px 16px rgba(44, 40, 38, 0.06);
+    pointer-events: none;
+  }
+  .hint kbd {
+    background: var(--cream-deep);
+    border: 1px solid var(--divider);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-family: ui-monospace, monospace;
+    font-size: 10px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Body <em>Pass</em> · Architecture GitHub interactive</div>
+  <div class="legend">
+    <span><span class="dot" style="background: var(--bg-source)"></span>Source</span>
+    <span><span class="dot" style="background: var(--bg-orch)"></span>Orchestration</span>
+    <span><span class="dot" style="background: var(--bg-engine)"></span>Moteur</span>
+    <span><span class="dot" style="background: var(--bg-front)"></span>Pages porteurs</span>
+    <span><span class="dot" style="background: var(--bg-email)"></span>Email</span>
+  </div>
+  <div class="controls">
+    <button id="zoomIn">＋</button>
+    <button id="zoomOut">−</button>
+    <button id="reset">Reset</button>
+    <button id="export">Export PNG</button>
+  </div>
+</header>
+
+<div id="canvas">
+  <svg viewBox="0 0 2280 1080" preserveAspectRatio="xMidYMid meet" id="svgRoot">
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="#A3695B" />
+      </marker>
+    </defs>
+    <g id="viewport">
+
+      <!-- Section bands -->
+      <rect class="section-band" x="40" y="60" width="340" height="380" rx="4"/>
+      <text class="section-title" x="60" y="50">1. Source de vérité</text>
+
+      <rect class="section-band" x="400" y="60" width="340" height="380" rx="4"/>
+      <text class="section-title" x="420" y="50">2. Orchestration n8n</text>
+
+      <rect class="section-band" x="760" y="60" width="540" height="720" rx="4"/>
+      <text class="section-title" x="780" y="50">3. Moteur Python (GitHub Actions)</text>
+
+      <rect class="section-band" x="1460" y="60" width="380" height="720" rx="4"/>
+      <text class="section-title" x="1480" y="50">4. Pages porteurs (GitHub Pages)</text>
+
+      <rect class="section-band" x="1900" y="60" width="320" height="720" rx="4"/>
+      <text class="section-title" x="1920" y="50">5. Archives & CDN</text>
+
+      <rect class="section-band" x="40" y="820" width="2200" height="260" rx="4"/>
+      <text class="section-title" x="60" y="810">6. Diffusion email · Mailchimp + Apps Script · Page interne</text>
+
+
+      <!-- ===================== 1. SOURCE ===================== -->
+      <g class="node-group" data-id="source-csv">
+        <rect class="node-rect" x="80" y="110" width="260" height="100" rx="3" fill="#E8DFCE" stroke="#C2B59B"/>
+        <text class="node-sub" x="210" y="138" fill="#54504E">SOURCE WOOCOMMERCE</text>
+        <text class="node-label" x="210" y="166" fill="#2C2826" font-size="17">Exports CSV nocturnes</text>
+        <text class="node-detail" x="210" y="190">membres · instituts · visites</text>
+      </g>
+
+      <g class="node-group" data-id="gmail">
+        <rect class="node-rect" x="80" y="240" width="260" height="100" rx="3" fill="#FBF7F1" stroke="#C2B59B"/>
+        <text class="node-sub" x="210" y="268" fill="#54504E">EMAIL</text>
+        <text class="node-label" x="210" y="296" fill="#2C2826" font-size="17">Boîte info@bodypass.ch</text>
+        <text class="node-detail" x="210" y="320">3 pièces jointes CSV/nuit</text>
+      </g>
+
+
+      <!-- ===================== 2. N8N ===================== -->
+      <g class="node-group" data-id="n8n">
+        <rect class="node-rect" x="430" y="160" width="280" height="220" rx="3" fill="#C2B59B" stroke="#A3695B"/>
+        <text class="node-sub" x="570" y="190" fill="#2C2826">N8N CLOUD · 6H45</text>
+        <text class="node-label" x="570" y="218" fill="#FBF7F1" font-size="17">bp-moteur-campagnes</text>
+        <text class="node-detail" x="570" y="244" fill="#FBF7F1">workflow 13 nodes</text>
+        <text class="node-detail" x="570" y="272" fill="#F2EBDF" font-size="11">Gmail → push CSV</text>
+        <text class="node-detail" x="570" y="290" fill="#F2EBDF" font-size="11">→ dispatch GH Action</text>
+        <text class="node-detail" x="570" y="308" fill="#F2EBDF" font-size="11">→ artifact + PATCH Mailchimp</text>
+        <text class="node-detail" x="570" y="338" fill="#F2EBDF" font-size="11">cap 1500/jour</text>
+      </g>
+
+
+      <!-- ===================== 3. ENGINE (big container) ===================== -->
+      <!-- Container with PROMINENT title band -->
+      <g class="node-group" data-id="engine">
+        <rect class="node-rect" x="780" y="100" width="500" height="680" rx="4" fill="#FBF7F1" stroke="#A3695B" stroke-width="1.5"/>
+        <rect x="780" y="100" width="500" height="70" rx="4" fill="#A3695B" pointer-events="none"/>
+        <text class="node-sub" x="1030" y="128" fill="#F2EBDF" font-size="11" pointer-events="none">REPO PRIVÉ · PYTHON 3.11</text>
+        <text class="node-label" x="1030" y="156" fill="#FBF7F1" font-size="24" pointer-events="none">bodypass-campaigns-engine</text>
+      </g>
+
+      <!-- Sub-modules INSIDE engine container (shifted down to leave room for the bigger header) -->
+      <g class="node-group" data-id="gh-action">
+        <rect class="node-rect" x="800" y="190" width="220" height="78" rx="3" fill="#FFFFFF" stroke="#C2B59B"/>
+        <text class="node-sub" x="910" y="214" fill="#54504E">GH ACTIONS</text>
+        <text class="node-label" x="910" y="238" fill="#2C2826" font-size="14">run-engine.yml</text>
+        <text class="node-detail" x="910" y="256" fill="#54504E" font-size="10">workflow_dispatch</text>
+      </g>
+
+      <g class="node-group" data-id="orchestrator">
+        <rect class="node-rect" x="1040" y="190" width="220" height="78" rx="3" fill="#FFFFFF" stroke="#C2B59B"/>
+        <text class="node-sub" x="1150" y="214" fill="#54504E">POINT D'ENTRÉE</text>
+        <text class="node-label" x="1150" y="238" fill="#2C2826" font-size="14">orchestrator.py</text>
+        <text class="node-detail" x="1150" y="256" fill="#54504E" font-size="10">3 segments + cap 1500</text>
+      </g>
+
+      <g class="node-group" data-id="core">
+        <rect class="node-rect" x="800" y="286" width="220" height="98" rx="3" fill="#F2EBDF" stroke="#C2B59B"/>
+        <text class="node-sub" x="910" y="310" fill="#54504E">LIBRAIRIE COMMUNE</text>
+        <text class="node-label" x="910" y="334" fill="#2C2826" font-size="14">core/</text>
+        <text class="node-detail" x="910" y="352" fill="#54504E" font-size="10">csv_loader · tokens</text>
+        <text class="node-detail" x="910" y="368" fill="#54504E" font-size="10">features · render</text>
+      </g>
+
+      <g class="node-group" data-id="campaigns">
+        <rect class="node-rect" x="1040" y="286" width="220" height="98" rx="3" fill="#F2EBDF" stroke="#C2B59B"/>
+        <text class="node-sub" x="1150" y="310" fill="#54504E">SEGMENTS</text>
+        <text class="node-label" x="1150" y="334" fill="#2C2826" font-size="14">campaigns/</text>
+        <text class="node-detail" x="1150" y="352" fill="#54504E" font-size="10">yesterday · utilization</text>
+        <text class="node-detail" x="1150" y="368" fill="#54504E" font-size="10">bilan_30d · ideas</text>
+      </g>
+
+      <g class="node-group" data-id="scrapers">
+        <rect class="node-rect" x="800" y="402" width="460" height="78" rx="3" fill="#F2EBDF" stroke="#C2B59B"/>
+        <text class="node-sub" x="1030" y="426" fill="#54504E">SCRAPER HEBDO (DIMANCHE)</text>
+        <text class="node-label" x="1030" y="450" fill="#2C2826" font-size="14">scrapers/etablissement_photos.py</text>
+        <text class="node-detail" x="1030" y="468" fill="#54504E" font-size="10">bodypass.ch → 1200×800 JPEG q80</text>
+      </g>
+
+      <!-- data-inbox (non-clickable annotation) -->
+      <rect x="800" y="498" width="460" height="46" rx="3" fill="#FFFFFF" stroke="#C2B59B" stroke-dasharray="4 4"/>
+      <text class="node-sub" x="1030" y="518" fill="#7A7470" pointer-events="none">DATA-INBOX/ · gitignored</text>
+      <text class="node-detail" x="1030" y="534" fill="#7A7470" font-size="10" pointer-events="none">drop zone n8n · 3 CSVs/nuit</text>
+
+      <!-- Outputs zone -->
+      <rect x="800" y="562" width="460" height="200" rx="3" fill="#FBF7F1" stroke="#C2B59B"/>
+      <text class="node-sub" x="1030" y="584" fill="#A3695B" pointer-events="none">SORTIES DU RUN</text>
+      <text class="node-detail" x="1030" y="612" fill="#54504E" font-size="11" pointer-events="none">out/{repo}/data/{token}.json   ←   payloads par porteur</text>
+      <text class="node-detail" x="1030" y="634" fill="#54504E" font-size="11" pointer-events="none">out/_mailchimp_user_tokens.csv   ←   sync Mailchimp</text>
+      <text class="node-detail" x="1030" y="656" fill="#54504E" font-size="11" pointer-events="none">out/_run_manifest.json   ←   récap pour n8n</text>
+      <text class="node-detail" x="1030" y="678" fill="#54504E" font-size="11" pointer-events="none">out/logs/run-{date}.jsonl   ←   logs structurés</text>
+      <text class="node-detail" x="1030" y="716" fill="#7A7470" font-size="10" font-style="italic" pointer-events="none">push_payloads.sh distribue ensuite vers les repos publics</text>
+
+
+      <!-- ===================== 4. PAGES PORTEURS ===================== -->
+      <g class="node-group" data-id="hier-notations">
+        <rect class="node-rect" x="1480" y="110" width="340" height="140" rx="3" fill="#FBF7F1" stroke="#A3695B" stroke-width="1.5"/>
+        <text class="node-sub" x="1650" y="138" fill="#A3695B">SEGMENT 1 · QUOTIDIEN</text>
+        <text class="node-label" x="1650" y="166" fill="#2C2826" font-size="18">hier-notations</text>
+        <text class="node-detail" x="1650" y="190" fill="#54504E">Notation J-1 · ~33/jour</text>
+        <text class="node-detail" x="1650" y="208" fill="#54504E" font-size="11">3 critères + commentaire</text>
+        <text class="node-detail" x="1650" y="232" fill="#A3695B" font-size="10" font-family="monospace">JOURSDEPV equals 1</text>
+      </g>
+
+      <g class="node-group" data-id="utilisation-30d">
+        <rect class="node-rect" x="1480" y="270" width="340" height="140" rx="3" fill="#FBF7F1" stroke="#A3695B" stroke-width="1.5"/>
+        <text class="node-sub" x="1650" y="298" fill="#A3695B">SEGMENT 2 · QUOTIDIEN</text>
+        <text class="node-label" x="1650" y="326" fill="#2C2826" font-size="18">utilisation-30d</text>
+        <text class="node-detail" x="1650" y="350" fill="#54504E">Relance J+30 · ~25/jour</text>
+        <text class="node-detail" x="1650" y="368" fill="#54504E" font-size="11">last visit + 3 reco</text>
+        <text class="node-detail" x="1650" y="392" fill="#A3695B" font-size="10" font-family="monospace">JOURSDEPV equals 30</text>
+      </g>
+
+      <g class="node-group" data-id="bilan-mensuel">
+        <rect class="node-rect" x="1480" y="430" width="340" height="140" rx="3" fill="#FBF7F1" stroke="#A3695B" stroke-width="1.5"/>
+        <text class="node-sub" x="1650" y="458" fill="#A3695B">SEGMENT 3 · MENSUEL</text>
+        <text class="node-label" x="1650" y="486" fill="#2C2826" font-size="18">bilan-mensuel</text>
+        <text class="node-detail" x="1650" y="510" fill="#54504E">Bilan 30j · le 15 du mois</text>
+        <text class="node-detail" x="1650" y="528" fill="#54504E" font-size="11">stats + visites + 3 reco</text>
+        <text class="node-detail" x="1650" y="552" fill="#A3695B" font-size="10" font-family="monospace">JOURSDEPV≤30 · active</text>
+      </g>
+
+      <g class="node-group" data-id="ideas-suggestions">
+        <rect class="node-rect" x="1480" y="590" width="340" height="140" rx="3" fill="#FBF7F1" stroke="#C2B59B" stroke-dasharray="4 4"/>
+        <text class="node-sub" x="1650" y="618" fill="#7A7470">SEGMENT 4 · À LANCER</text>
+        <text class="node-label" x="1650" y="646" fill="#7A7470" font-size="18">ideas-suggestions</text>
+        <text class="node-detail" x="1650" y="670" fill="#7A7470">Idées personnalisées</text>
+        <text class="node-detail" x="1650" y="690" fill="#7A7470" font-size="11">Placeholder · cadence TBD</text>
+        <text class="node-detail" x="1650" y="712" fill="#7A7470" font-size="10">— pas en prod —</text>
+      </g>
+
+
+      <!-- ===================== 5. ARCHIVES + CDN (separate right column) ===================== -->
+      <g class="node-group" data-id="notations-mai">
+        <rect class="node-rect" x="1920" y="110" width="280" height="140" rx="3" fill="#F2EBDF" stroke="#C2B59B" stroke-dasharray="3 4"/>
+        <text class="node-sub" x="2060" y="138" fill="#7A7470">LEGACY · MAI 2026</text>
+        <text class="node-label" x="2060" y="164" fill="#7A7470" font-size="16">notations-mai</text>
+        <text class="node-detail" x="2060" y="192" fill="#7A7470" font-size="11">Blast unique historique</text>
+        <text class="node-detail" x="2060" y="210" fill="#7A7470" font-size="11">Conservé pour archive</text>
+        <text class="node-detail" x="2060" y="234" fill="#7A7470" font-size="10">⚠ pas branché au pipeline</text>
+      </g>
+
+      <g class="node-group" data-id="assets">
+        <rect class="node-rect" x="1920" y="270" width="280" height="490" rx="3" fill="#F2EBDF" stroke="#A3695B" stroke-width="1.5"/>
+        <text class="node-sub" x="2060" y="298" fill="#54504E">CDN GITHUB PAGES</text>
+        <text class="node-label" x="2060" y="324" fill="#2C2826" font-size="18">bodypass-assets</text>
+        <text class="node-detail" x="2060" y="352" fill="#54504E">191 photos + default</text>
+        <text class="node-detail" x="2060" y="372" fill="#54504E" font-size="11">1200×800 JPEG q80</text>
+
+        <line x1="1950" y1="396" x2="2170" y2="396" stroke="#C2B59B" stroke-width="0.5"/>
+
+        <text class="node-detail" x="2060" y="420" fill="#54504E" font-size="11">URL CDN :</text>
+        <text class="node-detail" x="2060" y="438" fill="#A3695B" font-size="9" font-family="monospace">bodypass-ch.github.io/</text>
+        <text class="node-detail" x="2060" y="452" fill="#A3695B" font-size="9" font-family="monospace">bodypass-assets/</text>
+        <text class="node-detail" x="2060" y="466" fill="#A3695B" font-size="9" font-family="monospace">etablissements/{slug}.jpg</text>
+
+        <text class="node-detail" x="2060" y="510" fill="#54504E" font-size="11">Référencé par chaque</text>
+        <text class="node-detail" x="2060" y="528" fill="#54504E" font-size="11">payload via</text>
+        <text class="node-detail" x="2060" y="552" fill="#A3695B" font-size="10" font-family="monospace">etab_photo_url</text>
+
+        <text class="node-detail" x="2060" y="600" fill="#54504E" font-size="11">Alimenté par scrapers/</text>
+        <text class="node-detail" x="2060" y="620" fill="#54504E" font-size="11">dimanche soir · push manuel</text>
+      </g>
+
+
+      <!-- ===================== 6. DIFFUSION (bottom row) ===================== -->
+      <g class="node-group" data-id="coulisses">
+        <rect class="node-rect" x="80" y="860" width="340" height="200" rx="3" fill="#2C2826" stroke="#54504E"/>
+        <text class="node-sub" x="250" y="890" fill="#C2B59B">PAGE INTERNE BP</text>
+        <text class="node-label" x="250" y="920" fill="#FBF7F1" font-size="18">coulisses-equipe</text>
+        <text class="node-detail" x="250" y="946" fill="#F2EBDF">Dashboard équipe BP</text>
+        <text class="node-detail" x="250" y="968" fill="#C2B59B" font-size="11">4 onglets : Overview · Pipelines</text>
+        <text class="node-detail" x="250" y="984" fill="#C2B59B" font-size="11">Campagnes · GitHub</text>
+        <text class="node-detail" x="250" y="1016" fill="#C2B59B" font-size="11">page statique GH Pages</text>
+        <text class="node-detail" x="250" y="1044" fill="#A3695B" font-size="10" font-family="monospace">refresh manuel</text>
+      </g>
+
+      <g class="node-group" data-id="mailchimp">
+        <rect class="node-rect" x="460" y="860" width="500" height="200" rx="3" fill="#2C2826" stroke="#54504E"/>
+        <text class="node-sub" x="710" y="890" fill="#C2B59B">DIFFUSION B2C</text>
+        <text class="node-label" x="710" y="924" fill="#FBF7F1" font-size="20">Mailchimp · audience BP</text>
+        <text class="node-detail" x="710" y="956" fill="#F2EBDF" font-size="11">Merge fields :</text>
+        <text class="node-detail" x="710" y="974" fill="#C2B59B" font-size="11">USER_TOKEN · JOURSDEPV · STATUT_CRT · DER_ETAB</text>
+        <text class="node-detail" x="710" y="1010" fill="#F2EBDF" font-size="11">URL personnalisée :</text>
+        <text class="node-detail" x="710" y="1030" fill="#C2B59B" font-size="11" font-family="monospace">github.io/{repo}/?t=*|USER_TOKEN|*</text>
+      </g>
+
+      <g class="node-group" data-id="porteurs">
+        <rect class="node-rect" x="1000" y="860" width="380" height="200" rx="3" fill="#F2EBDF" stroke="#A3695B"/>
+        <text class="node-sub" x="1190" y="890" fill="#A3695B">DESTINATAIRES FINAUX</text>
+        <text class="node-label" x="1190" y="926" fill="#2C2826" font-size="20">~2500 porteurs actifs</text>
+        <text class="node-detail" x="1190" y="958" fill="#54504E" font-size="11">Reçoivent l'email avec</text>
+        <text class="node-detail" x="1190" y="976" fill="#54504E" font-size="11">leur lien personnalisé</text>
+        <text class="node-detail" x="1190" y="1010" fill="#54504E" font-size="11">Ouvrent leur page individuelle</text>
+      </g>
+
+      <g class="node-group" data-id="apps-script">
+        <rect class="node-rect" x="1420" y="860" width="380" height="200" rx="3" fill="#FBF7F1" stroke="#A3695B"/>
+        <text class="node-sub" x="1610" y="890" fill="#A3695B">WEBHOOK NOTATIONS</text>
+        <text class="node-label" x="1610" y="924" fill="#2C2826" font-size="17">Google Apps Script</text>
+        <text class="node-detail" x="1610" y="956" fill="#54504E" font-size="11">Reçoit les notes J-1</text>
+        <text class="node-detail" x="1610" y="974" fill="#54504E" font-size="11">POST text/plain</text>
+        <text class="node-detail" x="1610" y="1010" fill="#54504E" font-size="11">→ Google Sheet tracker</text>
+      </g>
+
+      <g class="node-group" data-id="recap">
+        <rect class="node-rect" x="1840" y="860" width="360" height="200" rx="3" fill="#FBF7F1" stroke="#C2B59B"/>
+        <text class="node-sub" x="2020" y="890" fill="#54504E">RÉCAP QUOTIDIEN</text>
+        <text class="node-label" x="2020" y="924" fill="#2C2826" font-size="17">Mail interne BP</text>
+        <text class="node-detail" x="2020" y="956" fill="#54504E" font-size="11">Envoyé par n8n après run</text>
+        <text class="node-detail" x="2020" y="974" fill="#54504E" font-size="11">Nb payloads · erreurs · segments</text>
+        <text class="node-detail" x="2020" y="1010" fill="#54504E" font-size="11">vers info@bodypass.ch</text>
+      </g>
+
+
+      <!-- ===================== ARROWS ===================== -->
+
+      <!-- 1. Source → Gmail (vertical court) -->
+      <path class="arrow" d="M 210 210 V 235"/>
+
+      <!-- 2. Gmail → n8n (horizontal direct) -->
+      <path class="arrow" d="M 340 290 H 425"/>
+      <text class="arrow-label" x="383" y="282">CSV pj</text>
+
+      <!-- 3. n8n → Engine title bar (entre dans le header burgundy) -->
+      <path class="arrow" d="M 710 135 H 778"/>
+      <text class="arrow-label" x="744" y="126">dispatch</text>
+
+      <!-- 4. ENGINE INTERNES (légères, montrent la cascade) -->
+      <path class="arrow" d="M 1020 228 H 1040" opacity="0.55"/>
+      <path class="arrow" d="M 1150 268 V 286" opacity="0.55"/>
+      <path class="arrow" d="M 1030 384 V 402" opacity="0.55"/>
+
+      <!-- 5. ENGINE → BRACE → 4 fronts -->
+      <!-- output de l'engine au point pivot (large gap entre engine et fronts) -->
+      <path d="M 1280 440 H 1378" stroke="#A3695B" stroke-width="2" fill="none" opacity="0.85"/>
+      <!-- brace vertical (sans flèche) -->
+      <line x1="1380" y1="180" x2="1380" y2="660" stroke="#A3695B" stroke-width="2" opacity="0.85"/>
+      <!-- 4 stubs horizontaux avec flèche vers chaque front -->
+      <path class="arrow" d="M 1380 180 H 1478"/>
+      <path class="arrow" d="M 1380 340 H 1478"/>
+      <path class="arrow" d="M 1380 500 H 1478"/>
+      <path class="arrow" d="M 1380 660 H 1478"/>
+      <text class="arrow-label" x="1380" y="380" text-anchor="middle" transform="rotate(-90 1380 380)">git push data/*.json par segment</text>
+
+      <!-- 6. SCRAPER → ASSETS (corridor x=1860, hors fronts col, hors archives col, dashed) -->
+      <path class="arrow" d="M 1260 441 H 1290 V 80 H 1860 V 400 H 1920" stroke-dasharray="6 4"/>
+      <text class="arrow-label" x="1575" y="72">scrape · dimanche</text>
+
+      <!-- 7. ASSETS → FRONTS (référence photos, dashed thin, espace 100px maintenant lisible) -->
+      <path class="arrow" d="M 1918 500 H 1822" stroke-dasharray="3 4" opacity="0.7"/>
+      <text class="arrow-label" x="1870" y="492" font-size="10">photo_url</text>
+
+      <!-- 8. ENGINE → MAILCHIMP (CSV USER_TOKEN, L-shape dans le corridor sous l'engine) -->
+      <path class="arrow" d="M 1030 780 V 830 H 710 V 860"/>
+      <text class="arrow-label" x="870" y="822">CSV USER_TOKEN (artifact)</text>
+
+      <!-- 9. MAILCHIMP → PORTEURS (court entre les deux boîtes adjacentes) -->
+      <path class="arrow" d="M 960 960 H 1000"/>
+      <text class="arrow-label" x="980" y="952">email</text>
+
+      <!-- 10. HIER-NOTATIONS → APPS SCRIPT (corridor x=1890, descend, revient vers gauche au-dessus d'apps-script) -->
+      <path class="arrow" d="M 1820 180 H 1890 V 840 H 1610 V 860" stroke-dasharray="2 4" opacity="0.75"/>
+      <text class="arrow-label" x="1700" y="836">POST avis</text>
+
+    </g>
+  </svg>
+</div>
+
+<div id="panel">
+  <button class="close" onclick="closePanel()">×</button>
+  <div id="panelContent"></div>
+</div>
+
+<div class="hint">Cliquez sur un bloc · molette pour zoomer · glisser pour déplacer</div>
+
+<script>
+// =========================================
+// CONTENU DES PANNEAUX
+// =========================================
+const DETAILS = {
+  "source-csv": {
+    eyebrow: "Source de vérité",
+    title: "Exports CSV WooCommerce",
+    repo: "WordPress · WooCommerce · plugin Body Pass",
+    sections: [
+      ["3 fichiers générés chaque nuit", `
+        <ul>
+          <li><code>membres_*.csv</code> · porteurs (carte, email, prénom, statut, date_expiration, etc.)</li>
+          <li><code>instituts_*.csv</code> · établissements partenaires (nom, identifiant, catégorie, canton, note globale, visites cumulées)</li>
+          <li><code>visites-export-*.csv</code> · historique brut des visites (carte, date, établissement)</li>
+        </ul>
+      `],
+      ["Pourquoi cette source", `<p>Tant que la jonction directe API WooCommerce n'est pas branchée, les exports CSV sont la source de vérité unique. Le pipeline est conçu pour s'en passer du jour au lendemain en branchant l'API : le seul module à changer est <code>core/csv_loader.py</code>.</p>`],
+      ["Réplication si perte", `<p>Reconfigurer le job nocturne sur WordPress qui exporte ces 3 fichiers et les envoie en pièce jointe à <code>info@bodypass.ch</code>. Sans ces CSVs, plus aucune campagne ne tourne.</p>`]
+    ]
+  },
+  "gmail": {
+    eyebrow: "Boîte de réception",
+    title: "info@bodypass.ch",
+    repo: "Gmail · Workspace Body Pass",
+    sections: [
+      ["Rôle", `<p>Le moteur n8n surveille cette boîte (filtre par expéditeur + objet) et déclenche le run dès qu'un mail avec les 3 pièces jointes CSV est détecté.</p>`],
+      ["Configuration", `<p>n8n utilise un credential <strong>OAuth Gmail</strong> côté n8n Cloud. Le déclencheur écoute le label "Body Pass exports" (ou équivalent).</p>`],
+      ["Risque", `<p>Si l'OAuth expire ou si le mot de passe change, n8n ne reçoit plus rien et le pipeline tourne à vide. À vérifier en cas d'absence de récap quotidien.</p>`]
+    ]
+  },
+  "n8n": {
+    eyebrow: "Orchestration centrale",
+    title: "Workflow bp-moteur-campagnes",
+    repo: "bodypass.app.n8n.cloud · workflow 13 nodes",
+    sections: [
+      ["Cadence", `<p><strong>Quotidien à 6h45</strong> (heure suisse). Tourne sur n8n Cloud, indépendant du Mac de l'équipe.</p>`],
+      ["Étapes du workflow", `
+        <ol style="padding-left:18px">
+          <li>Schedule trigger 6h45</li>
+          <li>Récupère le dernier mail Gmail avec les CSVs</li>
+          <li>Extrait les 3 pièces jointes (membres / instituts / visites)</li>
+          <li>Commit les CSVs dans <code>bodypass-campaigns-engine/data-inbox/</code> via l'API GitHub</li>
+          <li>Dispatch le workflow GitHub Actions <code>run-engine.yml</code></li>
+          <li>Poll le run jusqu'à completion (status: completed)</li>
+          <li>Télécharge l'artifact <code>mailchimp-user-tokens</code></li>
+          <li>Parse le CSV (EMAIL · CARTE_NUM · USER_TOKEN)</li>
+          <li>PATCH chaque porteur dans Mailchimp (mise à jour merge field USER_TOKEN)</li>
+          <li>Envoie le récap mail interne avec stats</li>
+        </ol>
+      `],
+      ["Credentials utilisés", `
+        <ul>
+          <li>Gmail OAuth (lecture)</li>
+          <li>GitHub PAT (commit CSV + dispatch + download artifact)</li>
+          <li>Mailchimp API key (PATCH /lists/{id}/members/{hash})</li>
+        </ul>
+      `],
+      ["Garde-fou", `<p>Le moteur Python applique un <strong>cap journalier de 1500 porteurs</strong>. Au-delà, l'orchestrateur s'arrête en erreur et le récap mail signale l'anomalie. Aucun email ne part en masse par erreur.</p>`]
+    ]
+  },
+  "engine": {
+    eyebrow: "Cerveau du système",
+    title: "bodypass-campaigns-engine",
+    repo: "github.com/bodypass-ch/bodypass-campaigns-engine · privé",
+    sections: [
+      ["Rôle", `<p>ETL Python qui consomme les CSVs, calcule les features par porteur, et génère les payloads JSON personnalisés. C'est <strong>le seul endroit où la logique métier est codée</strong> ; tout le reste (n8n, GH Pages, Mailchimp) ne fait que transporter et afficher.</p>`],
+      ["Structure du repo", `
+<pre>bodypass-campaigns-engine/
+├── orchestrator.py       # point d'entrée
+├── requirements.txt      # pandas, requests, beautifulsoup4, pillow
+├── .github/workflows/
+│   └── run-engine.yml    # GH Action déclenchée par n8n
+├── core/
+│   ├── csv_loader.py     # parse les 3 CSVs
+│   ├── porteur_features.py # features par porteur
+│   ├── render.py         # écrit JSON + CSV USER_TOKEN
+│   ├── tokens.py         # sha256("bodypass-{carte}")[:10]
+│   ├── text.py           # helpers (first_name, slug, etc.)
+│   ├── slug_map.py       # mapping nom → slug
+│   └── etablissements_slug_map.json
+├── campaigns/
+│   ├── yesterday_reviews/build.py
+│   ├── utilization_30d/build.py
+│   └── bilan_30d/build.py
+├── scrapers/
+│   └── etablissement_photos.py
+├── scripts/
+│   └── push_payloads.sh
+└── data-inbox/           # gitignore — où n8n drop les CSVs</pre>
+      `],
+      ["Secrets / variables GH", `
+        <ul>
+          <li><code>PUSH_PAT</code> · PAT GitHub scope <code>repo</code> · utilisé par <code>push_payloads.sh</code></li>
+          <li><code>GH_OWNER</code> · variable <code>= bodypass-ch</code></li>
+        </ul>
+      `],
+      ["Run local (dry-run)", `<pre>pip install -r requirements.txt
+mkdir -p data-inbox && cp /path/to/csvs/* data-inbox/
+python orchestrator.py --dry-run --run-date 2026-05-22</pre>`]
+    ]
+  },
+  "gh-action": {
+    eyebrow: "GitHub Actions",
+    title: "run-engine.yml",
+    repo: ".github/workflows/run-engine.yml",
+    sections: [
+      ["Trigger", `<p><code>workflow_dispatch</code> uniquement (déclenché par n8n via API REST). Aucun cron interne.</p>`],
+      ["Inputs", `
+        <ul>
+          <li><code>run_date</code> · date du run (YYYY-MM-DD) · défaut aujourd'hui</li>
+          <li><code>dry_run</code> · booléen · défaut false</li>
+          <li><code>campaigns</code> · liste segments séparés par virgule · défaut "yesterday_reviews,utilization_30d" · pour le run mensuel : "bilan_30d"</li>
+        </ul>
+      `],
+      ["Steps", `
+        <ol style="padding-left:18px">
+          <li>Checkout</li>
+          <li>Setup Python 3.11</li>
+          <li>Install requirements</li>
+          <li>Run <code>orchestrator.py</code></li>
+          <li>Push payloads vers hier-notations</li>
+          <li>Push payloads vers utilisation-30d</li>
+          <li>Push payloads vers bilan-mensuel (si présents)</li>
+          <li>Upload artifact <code>mailchimp-user-tokens</code> (CSV)</li>
+          <li>Upload artifact <code>run-manifest</code> (manifest + logs JSONL)</li>
+        </ol>
+      `]
+    ]
+  },
+  "orchestrator": {
+    eyebrow: "Point d'entrée Python",
+    title: "orchestrator.py",
+    repo: "bodypass-campaigns-engine/orchestrator.py",
+    sections: [
+      ["Séquence d'exécution", `
+        <ol style="padding-left:18px">
+          <li>Parse args (<code>--dry-run</code>, <code>--run-date</code>, <code>--campaigns</code>)</li>
+          <li>Charge les 3 CSVs via <code>csv_loader.load_inputs(inbox)</code></li>
+          <li>Calcule les features porteur via <code>porteur_features.compute_features</code></li>
+          <li>Pour chaque segment actif : appelle <code>campaigns/{seg}/build.py</code></li>
+          <li>Vérifie le cap journalier global (1500) · stop en erreur si dépassé</li>
+          <li>Écrit le CSV <code>out/_mailchimp_user_tokens.csv</code> (idempotent)</li>
+          <li>Écrit <code>out/_run_manifest.json</code> · lu par n8n pour le récap</li>
+        </ol>
+      `],
+      ["Logging structuré", `<p>Chaque event est loggé en JSON-Line dans <code>out/logs/run-{date}.jsonl</code> + stream stdout pour la GH Actions UI. Permet à n8n de remonter une vue machine-readable au mail récap.</p>`]
+    ]
+  },
+  "core": {
+    eyebrow: "Librairie commune",
+    title: "core/",
+    repo: "bodypass-campaigns-engine/core/",
+    sections: [
+      ["csv_loader.py", `<p>Parse les 3 exports CSV (membres, instituts, visites) en DataFrames pandas normalisés. Gère 3 formats de date (FR slash, FR point, ISO), parse les catégories multi-valuées, calcule <code>is_active</code> (statut <code>new_activated</code> + date_expiration > aujourd'hui).</p>`],
+      ["tokens.py", `<p>Token unique cross-campagne : <code>hashlib.sha256(f"bodypass-{carte}".encode()).hexdigest()[:10]</code>.<br>10 caractères hex, déterministe, partagé entre toutes les campagnes. <strong>Ne JAMAIS modifier le format</strong> sinon les URLs déjà envoyées cassent.</p>`],
+      ["porteur_features.py", `<p>Calcule par porteur : top catégorie visitée, top canton, fréquence, dernière visite, économies cumulées. Sert d'input aux 3 build.py.</p>`],
+      ["render.py", `<p>Helpers de sortie. <code>photo_url(filename)</code> construit l'URL CDN avec fallback default. <code>write_payload(repo_dir, token, payload)</code> écrit le JSON. <code>build_user_tokens_csv(df_membres, path)</code> écrit le CSV idempotent EMAIL · CARTE_NUM · USER_TOKEN qui sera consommé par n8n.</p>`]
+    ]
+  },
+  "campaigns": {
+    eyebrow: "Segments de campagne",
+    title: "campaigns/",
+    repo: "bodypass-campaigns-engine/campaigns/",
+    sections: [
+      ["yesterday_reviews/build.py", `<p>Segment <strong>Notations J-1</strong>. Pour chaque porteur ayant visité la veille, génère un payload <code>{carte, name, yesterday_date, visits[]}</code>. Push vers <code>hier-notations/data/{token}.json</code>.</p>`],
+      ["utilization_30d/build.py", `<p>Segment <strong>Utilisation J+30</strong>. Cible : porteurs dont la dernière visite date d'exactement J-30 ET carte active. Génère <code>{carte, name, last_visit, top_category, top_canton, suggestions[3]}</code>. Les 3 suggestions sont calculées par <em>favorite_category</em>, <em>same_canton</em>, et <em>novelty</em> (nouveauté du réseau).</p>`],
+      ["bilan_30d/build.py", `<p>Segment <strong>Bilan mensuel</strong>. Cible : <code>STATUT_CRT=active AND JOURSDEPV<=30</code>. Génère <code>{name, window, stats {visites, top_category, economies_chf}, visites[4], recos[3]}</code>. Format "Wrapped" sur 30 jours glissants.</p>`],
+      ["Ajouter une nouvelle campagne", `<p>1. Créer <code>campaigns/{nom}/build.py</code> avec signature <code>build(df_visites, df_etabs, df_membres, features, run_date, repo_dir) -> (rows, stats)</code>.<br>2. Ajouter dans <code>SEGMENTS</code> de l'orchestrator.<br>3. Ajouter le step <code>push</code> dans <code>run-engine.yml</code>.<br>4. Créer le repo GH Pages cible avec <code>index.html</code> qui fetch <code>data/{token}.json</code>.</p>`]
+    ]
+  },
+  "scrapers": {
+    eyebrow: "Scraper hebdomadaire",
+    title: "etablissement_photos.py",
+    repo: "bodypass-campaigns-engine/scrapers/",
+    sections: [
+      ["Rôle", `<p>Scrape la photo "hero" de chaque établissement depuis bodypass.ch, la normalise en 1200×800 JPEG q80, et l'ajoute au repo <code>bodypass-assets/etablissements/</code>.</p>`],
+      ["Cadence", `<p>Dimanche soir, une fois par semaine. Pas encore branché dans l'Action principale : le déclenchement reste manuel pour l'instant (run local + push).</p>`],
+      ["Naming", `<p>Fichier nommé <code>{slug-etablissement}.jpg</code>, slug calculé via <code>core/slug_map.py</code>. Référencé dans les payloads JSON via <code>etab_photo_url</code>.</p>`]
+    ]
+  },
+  "assets": {
+    eyebrow: "CDN photos",
+    title: "bodypass-assets",
+    repo: "github.com/bodypass-ch/bodypass-assets · public",
+    sections: [
+      ["Contenu", `<p>Repository GitHub Pages servant 191 photos JPEG d'établissements + 1 <code>_default.jpg</code> de fallback. Aucun code, juste des images.</p>`],
+      ["URL pattern", `<pre>https://bodypass-ch.github.io/bodypass-assets/etablissements/{slug}.jpg</pre>`],
+      ["Pourquoi un repo dédié", `<p>Sépare les photos (lourdes, peu modifiées) du code (léger, modifié souvent). Permet à GitHub Pages de servir les images via son CDN sans charger les repos métier.</p>`],
+      ["Risque", `<p>Si la limite GitHub Pages (1 GB par repo, 100 GB de bande passante/mois) est atteinte, il faudra basculer sur un CDN externe (Cloudflare R2, Vercel Blob).</p>`]
+    ]
+  },
+  "hier-notations": {
+    eyebrow: "Segment notations J-1",
+    title: "hier-notations",
+    repo: "github.com/bodypass-ch/hier-notations · public",
+    sections: [
+      ["Audience", `<p>Tous les porteurs ayant visité un établissement la veille. Volume typique : <strong>~33 porteurs/jour</strong>.</p>`],
+      ["Page", `<p><code>index.html</code> fetch <code>data/{token}.json</code> et affiche pour chaque visite un formulaire de notation 3 critères (Beauté du lieu · Qualité accueil · Qualité soins) + commentaire libre.</p>`],
+      ["Soumission", `<p>POST vers le webhook Google Apps Script en <code>text/plain</code> (bypass CORS preflight). Apps Script écrit dans le Google Sheet tracker.</p>`],
+      ["Gating Mailchimp", `<p>Segment natif Mailchimp : <code>JOURSDEPV equals 1</code>. URL personnalisée construite côté template : <code>github.io/hier-notations/?t=*|USER_TOKEN|*</code>.</p>`],
+      ["Cycle de vie d'une page", `<p>Le payload reste tant qu'il n'est pas écrasé par un run suivant. Si le porteur revient à la même page après plusieurs jours, le contenu peut être obsolète mais reste lisible.</p>`]
+    ]
+  },
+  "utilisation-30d": {
+    eyebrow: "Segment relance J+30",
+    title: "utilisation-30d",
+    repo: "github.com/bodypass-ch/utilisation-30d · public",
+    sections: [
+      ["Audience", `<p>Porteurs dont la dernière visite date d'exactement <strong>J-30</strong> ET carte encore active. Volume typique : ~25/jour.</p>`],
+      ["Logique du payload", `<p>Le payload contient le rappel de la dernière visite (hero) + 3 suggestions calculées sur les features porteur :<br>1. <em>favorite_category</em> · même catégorie que la dernière visite<br>2. <em>same_canton</em> · autre établissement dans le même canton<br>3. <em>novelty</em> · nouveauté du réseau (collection "Nouveaux établissements" ou date_creation < 180 jours)</p>`],
+      ["Anti-doublon", `<p>Implicite : J-30 exact = un seul jour de match par porteur par cycle. Si le porteur revisite, sa <em>last_visit_date</em> avance et il sort du segment.</p>`],
+      ["Gating Mailchimp", `<p><code>JOURSDEPV equals 30 AND STATUT_CRT = new_activated</code>. URL : <code>github.io/utilisation-30d/?t=*|USER_TOKEN|*</code>.</p>`]
+    ]
+  },
+  "bilan-mensuel": {
+    eyebrow: "Segment bilan mensuel",
+    title: "bilan-mensuel",
+    repo: "github.com/bodypass-ch/bilan-mensuel · public",
+    sections: [
+      ["Audience", `<p>Tous les porteurs actifs avec au moins une visite dans les 30 derniers jours. Volume : <strong>~tous les actifs</strong>, envoi le 15 du mois.</p>`],
+      ["Format Wrapped", `<p>Stats clés (visites, top catégorie, économies CHF) + jusqu'à 4 visites récentes + 3 recos (favorite_category · same_canton · novelty). Fenêtre 30 jours glissants.</p>`],
+      ["Cadence", `<p>Mensuel, déclenché par n8n le 14 à 23h pour envoi le 15. Premier envoi prévu : <strong>15 juin 2026</strong>.</p>`],
+      ["Gating Mailchimp", `<p>Mailchimp Marketing récurrent. Segment <code>STATUT_CRT=active AND JOURSDEPV<=30</code>.</p>`]
+    ]
+  },
+  "ideas-suggestions": {
+    eyebrow: "Segment à lancer",
+    title: "ideas-suggestions",
+    repo: "github.com/bodypass-ch/ideas-suggestions · placeholder",
+    sections: [
+      ["Statut", `<p>⚠ <strong>Pas en production</strong>. Le repo existe avec un <code>index.html</code> de coming-soon, mais aucun payload n'est généré, aucune campagne email n'est branchée.</p>`],
+      ["Concept prévu", `<p>Recommandations push sans déclencheur événementiel. À segmenter sur des porteurs peu actifs mais carte active, avec rotation manuelle ou cadence trimestrielle.</p>`],
+      ["Pour lancer", `<p>1. Créer <code>campaigns/ideas/build.py</code> dans le moteur.<br>2. Compléter <code>index.html</code> avec un template visuel.<br>3. Créer le segment Mailchimp.<br>4. Tester sur julieta@bodypass.ch avant blast.</p>`]
+    ]
+  },
+  "notations-mai": {
+    eyebrow: "Repo legacy",
+    title: "notations-mai",
+    repo: "github.com/bodypass-ch/notations-mai · public (archive)",
+    sections: [
+      ["Statut", `<p>Premier prototype du système de notation, blast unique de mai 2026. Architecture : payloads JSON dans <code>review-data/</code> (au lieu de <code>data/</code> aujourd'hui), submit vers le même Google Apps Script.</p>`],
+      ["Pourquoi conservé", `<p>Liens des emails déjà envoyés en mai 2026 pointent encore vers ce repo. Le supprimer casserait les URLs en circulation.</p>`],
+      ["Évolution", `<p>Remplacé par <code>hier-notations</code> pour les campagnes récurrentes. Ne plus créer de nouveaux payloads ici.</p>`]
+    ]
+  },
+  "coulisses": {
+    eyebrow: "Page interne BP",
+    title: "coulisses-equipe",
+    repo: "github.com/bodypass-ch/coulisses-equipe · public mais usage interne",
+    sections: [
+      ["Rôle", `<p>Dashboard de référence pour l'équipe Body Pass. 4 onglets : Overview · Pipelines · Campagnes · GitHub. Sert de "carte du système" — un nouvel arrivant peut comprendre ce qui tourne, où, et qui en est responsable.</p>`],
+      ["Maintenance", `<p>Page statique HTML (93 KB en un seul fichier). Modification = commit direct sur <code>index.html</code>. Pas de fetch dynamique : tout est figé au moment du commit.</p>`],
+      ["URL", `<pre>https://bodypass-ch.github.io/coulisses-equipe/</pre>`],
+      ["Limite", `<p>Comme la page est statique, les chiffres affichés (volumes, dates de run) sont mis à jour manuellement. Pour passer en dynamique : ajouter un fetch vers le <code>_run_manifest.json</code> que produit n8n.</p>`]
+    ]
+  },
+  "mailchimp": {
+    eyebrow: "Diffusion B2C",
+    title: "Mailchimp · audience Body Pass",
+    repo: "Plateforme externe · pas dans GitHub",
+    sections: [
+      ["Rôle dans l'archi", `<p>Mailchimp est la <strong>source de vérité côté contact</strong> (emails, statuts, segments). Le moteur GitHub patche les merge fields ; Mailchimp décide qui reçoit quoi via ses segments natifs.</p>`],
+      ["Merge fields utilisés", `
+        <ul>
+          <li><code>USER_TOKEN</code> · token sha256 du porteur · injecté dans l'URL</li>
+          <li><code>CARTE_NUM</code> · numéro de carte</li>
+          <li><code>JOURSDEPV</code> · jours depuis dernière visite</li>
+          <li><code>JOURS_REST</code> · jours avant expiration de la carte</li>
+          <li><code>STATUT_CRT</code> · statut de la carte (new_activated / inactive)</li>
+          <li><code>DER_ETAB</code> · dernier établissement visité (sert au sujet du mail)</li>
+          <li><code>ECONOMIES</code> · économies cumulées CHF</li>
+          <li><code>NB_RENOUV</code> · nombre de cartes achetées (renouvellements)</li>
+        </ul>
+      `],
+      ["Pattern URL", `<pre>https://bodypass-ch.github.io/{repo}/?t=*|USER_TOKEN|*</pre><p>Mailchimp remplace <code>*|USER_TOKEN|*</code> par la valeur du contact à l'envoi.</p>`],
+      ["Sécurité", `<p>Toutes les campagnes B2B exigent une relecture humaine avant envoi. Les campagnes B2C peuvent partir en automatique mais respectent le cap journalier (1500).</p>`]
+    ]
+  },
+  "apps-script": {
+    eyebrow: "Webhook notations",
+    title: "Google Apps Script",
+    repo: "script.google.com/macros/s/AKfycbx3...",
+    sections: [
+      ["Rôle", `<p>Reçoit les soumissions de notation depuis la page <code>hier-notations</code> (et historiquement <code>notations-mai</code>). Écrit chaque ligne dans un Google Sheet tracker.</p>`],
+      ["Format reçu", `
+<pre>{
+  carte, prenom, token, campagne,
+  ratings: [{
+    etablissement, beaute, accueil, soins,
+    commentaire, visite_id, etab_slug, date_visite
+  }]
+}</pre>
+      `],
+      ["Astuce CORS", `<p>POST en <code>text/plain</code> (pas <code>application/json</code>) pour éviter le preflight CORS. Apps Script lit <code>e.postData.contents</code>.</p>`],
+      ["Risque", `<p>Si le déploiement Apps Script est supprimé ou si l'URL change, les soumissions de notes échouent silencieusement (mode <code>no-cors</code>). À monitorer dans le Google Sheet tracker chaque semaine.</p>`]
+    ]
+  },
+  "porteurs": {
+    eyebrow: "Destinataires finaux",
+    title: "~2500 porteurs actifs",
+    repo: "Audience Mailchimp",
+    sections: [
+      ["Parcours d'un mail", `<ol style="padding-left:18px"><li>Mailchimp envoie l'email selon le segment</li><li>Porteur ouvre l'email, voit le sujet personnalisé (avec <code>DER_ETAB</code>)</li><li>Clique sur le CTA → <code>github.io/{repo}/?t={token}</code></li><li>La page fetch <code>data/{token}.json</code> et s'affiche personnalisée</li><li>Si notation : POST vers Apps Script → Google Sheet</li><li>Sinon : exploration vers bodypass.ch ou page établissement</li></ol>`],
+      ["Sécurité du token", `<p>Le token <strong>n'est jamais exposé en clair</strong> dans le code source des pages. Pas non plus envoyé à des tiers (analytics, etc.). Une fuite de la liste de tokens reste sans gravité : la page personnalisée n'expose que prénom + visites publiques.</p>`]
+    ]
+  },
+  "recap": {
+    eyebrow: "Récap quotidien",
+    title: "Mail interne · n8n",
+    repo: "Email envoyé par n8n à info@bodypass.ch",
+    sections: [
+      ["Contenu", `<p>Récapitulatif envoyé après chaque run :<br>· nombre de payloads générés par segment<br>· erreurs éventuelles<br>· lien vers le run GH Actions<br>· lien vers le manifest JSON</p>`],
+      ["Quand s'en inquiéter", `<p>· Pas de mail un matin = le pipeline est mort (Gmail, n8n, ou GH Action)<br>· "0 payload" sur un segment qui d'habitude tourne = problème de données<br>· "cap exceeded" = bug en amont, à investiguer avant de relancer</p>`]
+    ]
+  }
+};
+
+// =========================================
+// INTERACTIONS
+// =========================================
+const svgRoot = document.getElementById('svgRoot');
+const viewport = document.getElementById('viewport');
+const canvas = document.getElementById('canvas');
+let scale = 1, tx = 0, ty = 0;
+let isDragging = false, lastX, lastY;
+
+function updateTransform() {
+  viewport.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`);
+}
+
+canvas.addEventListener('mousedown', e => {
+  if (e.target.closest('.node-group')) return;
+  isDragging = true;
+  lastX = e.clientX; lastY = e.clientY;
+  canvas.classList.add('dragging');
+});
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  tx += e.clientX - lastX;
+  ty += e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+  updateTransform();
+});
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+  canvas.classList.remove('dragging');
+});
+
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = svgRoot.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const newScale = Math.max(0.3, Math.min(4, scale * delta));
+  // zoom vers le pointeur
+  const sx = (mx - tx) / scale;
+  const sy = (my - ty) / scale;
+  tx = mx - sx * newScale;
+  ty = my - sy * newScale;
+  scale = newScale;
+  updateTransform();
+}, { passive: false });
+
+document.getElementById('zoomIn').onclick = () => {
+  scale = Math.min(4, scale * 1.2); updateTransform();
+};
+document.getElementById('zoomOut').onclick = () => {
+  scale = Math.max(0.3, scale * 0.83); updateTransform();
+};
+document.getElementById('reset').onclick = () => {
+  scale = 1; tx = 0; ty = 0; updateTransform();
+};
+document.getElementById('export').onclick = () => {
+  const svgData = new XMLSerializer().serializeToString(svgRoot);
+  const blob = new Blob([svgData], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bodypass-architecture.svg';
+  a.click();
+};
+
+// Click nodes
+document.querySelectorAll('.node-group').forEach(n => {
+  n.addEventListener('click', e => {
+    e.stopPropagation();
+    const id = n.dataset.id;
+    openPanel(id);
+  });
+});
+
+function openPanel(id) {
+  const data = DETAILS[id];
+  if (!data) return;
+  const content = document.getElementById('panelContent');
+  let html = `
+    <div class="eyebrow">${data.eyebrow}</div>
+    <h2>${data.title}</h2>
+    <div class="repo">${data.repo}</div>
+  `;
+  for (const [heading, body] of data.sections) {
+    html += `<h3>${heading}</h3>${body}`;
+  }
+  content.innerHTML = html;
+  document.getElementById('panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+}
+window.closePanel = closePanel;
+
+// ESC ferme panel
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePanel();
+});
+
+// Auto-fit initial : laisser le SVG remplir naturellement le viewport
+window.addEventListener('load', () => {
+  scale = 1; tx = 0; ty = 0; updateTransform();
+});
+</script>
+</body>
+</html>
