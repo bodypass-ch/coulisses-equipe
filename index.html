@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Body Pass — Les coulisses du projet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FBF7F1;
+    --cream-warm: #F2EBDF;
+    --burgundy: #A3695B;
+    --burgundy-dark: #8C5749;
+    --champagne: #C2B59B;
+    --champagne-soft: #E8DFCE;
+    --text: #54504E;
+    --text-soft: #7A746F;
+    --title: #2C2826;
+    --white: #FFFFFF;
+    --border: #E8DFCE;
+    --green: #5B7A55;
+    --amber: #B8842F;
+    --slate: #6B6B6B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text);
+    background: var(--cream);
+    line-height: 1.6;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5 {
+    font-family: 'Playfair Display', Georgia, serif;
+    color: var(--title);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  h1 { font-size: 2.6rem; }
+  h2 { font-size: 2rem; margin-bottom: 1rem; }
+  h3 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  h4 { font-size: 1.1rem; }
+  p { margin-bottom: 1rem; }
+  a { color: var(--burgundy); text-decoration: none; transition: color 0.2s; }
+  a:hover { color: var(--burgundy-dark); }
+
+  /* ============ HEADER ============ */
+  .top-header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 1.6rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.96);
+  }
+  .top-header .logo { height: 60px; width: auto; }
+  .top-header .title-eyebrow {
+    font-family: 'Source Sans 3';
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--text-soft);
+    margin-bottom: 0.15rem;
+  }
+  .top-header .title-main {
+    font-family: 'Playfair Display';
+    font-size: 1.25rem;
+    color: var(--title);
+    font-style: italic;
+  }
+
+  /* ============ TABS ============ */
+  .tabs-wrap {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 97px;
+    z-index: 49;
+  }
+  .tabs {
+    display: flex;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    font-family: 'Source Sans 3';
+    font-size: 0.95rem;
+    color: var(--text-soft);
+    padding: 1.1rem 1.6rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.25s;
+    white-space: nowrap;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .tab-btn:hover { color: var(--burgundy); }
+  .tab-btn.active {
+    color: var(--burgundy);
+    border-bottom-color: var(--burgundy);
+  }
+
+  /* ============ LAYOUT ============ */
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+  }
+  .panel { display: none; animation: fadeIn 0.4s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from {opacity: 0; transform: translateY(8px);} to {opacity: 1; transform: translateY(0);} }
+
+  .eyebrow {
+    font-family: 'Source Sans 3';
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--burgundy);
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+  }
+  .section-intro { max-width: 720px; margin-bottom: 3rem; }
+  .section-intro p { font-size: 1.08rem; color: var(--text); }
+
+  /* ============ VUE D'ENSEMBLE ============ */
+  .hero {
+    background: var(--white);
+    border-radius: 6px;
+    padding: 3rem 3rem 2.5rem;
+    margin-bottom: 3rem;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, var(--champagne-soft) 0%, transparent 70%);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .hero h1 { font-size: 2.4rem; margin-bottom: 1rem; max-width: 760px; }
+  .hero h1 em { font-style: italic; color: var(--burgundy); font-weight: 400; }
+  .hero p.lead { font-size: 1.15rem; color: var(--text); max-width: 720px; }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 2.5rem;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.6rem 1.4rem;
+    text-align: left;
+  }
+  .stat-num {
+    font-family: 'Playfair Display';
+    font-size: 2.6rem;
+    color: var(--burgundy);
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .stat-label {
+    font-size: 0.88rem;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* ============ READING GUIDE ============ */
+  .reading-guide {
+    background: var(--cream-warm);
+    border-radius: 6px;
+    padding: 1.8rem 2.2rem;
+    border-left: 3px solid var(--burgundy);
+    margin-bottom: 2.5rem;
+  }
+  .reading-guide h3 { color: var(--burgundy); margin-bottom: 0.8rem; font-size: 1.25rem; }
+  .reading-guide ul { list-style: none; padding: 0; }
+  .reading-guide li {
+    padding: 0.4rem 0;
+    padding-left: 1.4rem;
+    position: relative;
+    font-size: 0.98rem;
+  }
+  .reading-guide li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--burgundy);
+    font-weight: 600;
+  }
+
+  /* ============ STATUS TABLE ============ */
+  .status-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+  .status-card-head {
+    padding: 1.6rem 2rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .status-card-head h2 { margin-bottom: 0.3rem; font-size: 1.6rem; }
+  .status-card-head p { font-size: 0.95rem; color: var(--text-soft); margin: 0; }
+  .status-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 2fr;
+    align-items: center;
+    padding: 1.1rem 2rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+  .status-row:last-child { border-bottom: none; }
+  .status-row:hover { background: var(--cream); }
+  .status-name {
+    font-family: 'Playfair Display';
+    font-size: 1.05rem;
+    color: var(--title);
+  }
+  .status-detail { font-size: 0.92rem; color: var(--text-soft); }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 100px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+  .badge.live { background: rgba(91, 122, 85, 0.12); color: var(--green); }
+  .badge.brouillon { background: rgba(184, 132, 47, 0.14); color: var(--amber); }
+  .badge.etl { background: rgba(163, 105, 91, 0.12); color: var(--burgundy); }
+  .badge.dev { background: rgba(163, 105, 91, 0.12); color: var(--burgundy); }
+  .badge.todo { background: rgba(107, 107, 107, 0.12); color: var(--slate); }
+
+  /* ============ PIPELINES ============ */
+  .pipeline-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    transition: box-shadow 0.3s;
+  }
+  .pipeline-card:hover { box-shadow: 0 4px 24px rgba(44, 40, 38, 0.05); }
+  .pipeline-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .pipeline-head .title-block { flex: 1; min-width: 250px; }
+  .pipeline-head h3 { font-size: 1.6rem; }
+  .pipeline-head .subtitle { color: var(--text-soft); font-style: italic; font-size: 1rem; }
+  .pipeline-section { margin-top: 2rem; }
+  .pipeline-section h4 {
+    text-transform: uppercase;
+    font-family: 'Source Sans 3';
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    color: var(--burgundy);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+  .schema {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2rem 1.5rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  .schema svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+
+  /* ============ CAMPAGNES ============ */
+  .filter-bar {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: var(--white);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1.1rem;
+    border-radius: 100px;
+    cursor: pointer;
+    font-family: 'Source Sans 3';
+    font-size: 0.88rem;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--burgundy); color: var(--burgundy); }
+  .filter-btn.active {
+    background: var(--burgundy);
+    color: var(--white);
+    border-color: var(--burgundy);
+  }
+  .campagnes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+  }
+  .campagne-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.8rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    font-family: inherit;
+    color: inherit;
+  }
+  .campagne-card:hover {
+    box-shadow: 0 6px 24px rgba(44, 40, 38, 0.08);
+    transform: translateY(-2px);
+    border-color: var(--champagne);
+  }
+  .campagne-card h3 {
+    font-size: 1.3rem;
+    margin: 0.8rem 0 0.5rem;
+  }
+  .campagne-card .one-liner {
+    color: var(--text-soft);
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+    flex-grow: 1;
+  }
+  .campagne-card .meta {
+    border-top: 1px solid var(--border);
+    padding-top: 0.9rem;
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .campagne-card .meta .arrow {
+    color: var(--burgundy);
+    font-family: 'Playfair Display';
+    font-style: italic;
+  }
+
+  /* ============ MODAL ============ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(44, 40, 38, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 3rem 2rem;
+    overflow-y: auto;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--cream);
+    max-width: 1180px;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease;
+    margin-bottom: 4rem;
+  }
+  .modal-head {
+    background: var(--white);
+    padding: 2rem 2.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .modal-close {
+    position: absolute;
+    top: 1.2rem; right: 1.2rem;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: var(--text-soft);
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { background: var(--cream); color: var(--title); }
+  .modal-head h2 { font-size: 1.9rem; margin-bottom: 0.5rem; }
+  .modal-body { padding: 2rem 2.5rem 2.5rem; }
+  .modal-block { margin-bottom: 2rem; }
+  .modal-block:last-child { margin-bottom: 0; }
+  .modal-block h4 {
+    text-transform: uppercase;
+    font-family: 'Source Sans 3';
+    font-size: 0.78rem;
+    letter-spacing: 0.2em;
+    color: var(--burgundy);
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    margin-top: 1rem;
+  }
+  .info-cell {
+    background: var(--white);
+    padding: 1.2rem 1.4rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .info-cell .label {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    color: var(--text-soft);
+    margin-bottom: 0.3rem;
+  }
+  .info-cell .value {
+    font-family: 'Playfair Display';
+    font-size: 1.05rem;
+    color: var(--title);
+  }
+
+  /* ============ SIDE BY SIDE EMAIL + HTML ============ */
+  .preview-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .preview-row.single { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+  .preview-col h5 {
+    font-family: 'Source Sans 3';
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-soft);
+    text-align: center;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+  }
+
+  /* ============ FULL EMAIL TEMPLATE ============ */
+  .email-frame {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(44, 40, 38, 0.06);
+  }
+  .email-meta {
+    padding: 0.75rem 1rem 0.65rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--cream);
+    font-size: 0.68rem;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
+  .email-meta .subject {
+    color: var(--title);
+    font-weight: 600;
+    font-size: 0.76rem;
+    margin-top: 0.2rem;
+  }
+  .email-meta .preheader {
+    color: var(--text-soft);
+    font-style: italic;
+    font-size: 0.66rem;
+    margin-top: 0.25rem;
+  }
+  .email-body {
+    padding: 1.5rem 1.2rem 1.2rem;
+    text-align: center;
+    font-family: 'Source Sans 3';
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 1.6;
+    position: relative;
+  }
+  /* Côte à côte : email et page perso ont la même hauteur avec fondu en bas */
+  .preview-row:not(.single) .email-body {
+    height: 540px;
+    overflow: hidden;
+  }
+  .preview-row:not(.single) .email-body::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--white));
+    pointer-events: none;
+  }
+  .email-body .email-logo {
+    height: 26px;
+    margin-bottom: 1.1rem;
+  }
+  .email-body h1 {
+    font-family: 'Playfair Display';
+    font-size: 1.15rem;
+    color: var(--title);
+    font-weight: 500;
+    margin-bottom: 0.7rem;
+    line-height: 1.3;
+  }
+  .email-body p {
+    margin-bottom: 0.7rem;
+    color: var(--text);
+    font-size: 0.82rem;
+  }
+  .email-body .email-cta {
+    display: inline-block;
+    background: var(--burgundy);
+    color: var(--white);
+    padding: 0.55rem 1.3rem;
+    border-radius: 3px;
+    font-size: 0.76rem;
+    letter-spacing: 0.04em;
+    margin: 0.6rem 0 0.9rem;
+    font-weight: 500;
+  }
+  .email-body .stat-box {
+    background: var(--cream);
+    border-radius: 4px;
+    padding: 0.9rem 0.8rem;
+    margin: 0.8rem 0;
+  }
+  .email-body .stat-box .top-label {
+    font-size: 0.58rem;
+    color: var(--burgundy);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+  .email-body .stat-box .big-num {
+    font-family: 'Playfair Display';
+    font-size: 1.55rem;
+    color: var(--title);
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+  .email-body .stat-box .bot-label {
+    font-size: 0.6rem;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+  .email-body .stat-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 0.4rem;
+    background: var(--cream);
+    border-radius: 4px;
+    padding: 0.8rem 0.4rem;
+    margin: 0.8rem 0;
+  }
+  .email-body .stat-row .stat-cell {
+    flex: 1;
+    text-align: center;
+  }
+  .email-body .stat-row .num {
+    font-family: 'Playfair Display';
+    font-size: 1.15rem;
+    color: var(--title);
+    font-weight: 500;
+    margin-bottom: 0.15rem;
+  }
+  .email-body .stat-row .lbl {
+    font-size: 0.56rem;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .email-body .email-ps {
+    font-style: italic;
+    font-size: 0.74rem;
+    color: var(--text-soft);
+    margin: 0.8rem 0;
+  }
+  .email-body .email-closing {
+    margin: 0.8rem 0 1rem;
+  }
+  .email-body .email-closing .signature {
+    font-family: 'Playfair Display';
+    font-style: italic;
+    color: var(--burgundy);
+    font-size: 0.88rem;
+  }
+  .email-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 1.5rem 1.6rem 1.2rem;
+  }
+  .email-footer {
+    text-align: center;
+    padding: 0 1.6rem 1.6rem;
+  }
+  .email-footer .socials {
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+  .email-footer .socials span {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--burgundy);
+    color: var(--burgundy);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .email-footer .baseline {
+    font-family: 'Playfair Display';
+    font-style: italic;
+    color: var(--text-soft);
+    font-size: 0.78rem;
+    margin-bottom: 0.4rem;
+  }
+  .email-footer .legal {
+    font-size: 0.66rem;
+    color: var(--text-soft);
+    line-height: 1.6;
+  }
+  .email-footer .legal a { color: var(--burgundy); text-decoration: underline; }
+
+  /* ============ HTML PAGE PREVIEW FRAME ============ */
+  .browser-frame {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(44, 40, 38, 0.06);
+  }
+  .browser-bar {
+    background: var(--cream);
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .browser-bar .dots {
+    display: flex;
+    gap: 0.35rem;
+    margin-right: 0.6rem;
+  }
+  .browser-bar .dots span {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--champagne);
+  }
+  .browser-bar .url {
+    flex: 1;
+    background: var(--white);
+    border-radius: 3px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.7rem;
+    color: var(--text-soft);
+    font-family: 'Source Sans 3';
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .browser-content {
+    height: 540px;
+    overflow: hidden;
+    position: relative;
+    background: var(--white);
+  }
+  .browser-content::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--white));
+    pointer-events: none;
+  }
+  .browser-content .page-inner {
+    padding: 1.5rem 1.2rem;
+    text-align: center;
+    font-family: 'Source Sans 3';
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+  .browser-content .page-inner h1 {
+    font-family: 'Playfair Display';
+    font-size: 1.25rem;
+    color: var(--title);
+    margin-bottom: 0.6rem;
+    line-height: 1.3;
+    font-weight: 500;
+  }
+  .browser-content .page-inner p { font-size: 0.84rem; color: var(--text); margin-bottom: 0.8rem; }
+  .browser-content .page-logo { height: 28px; margin-bottom: 1.2rem; }
+
+  /* Notation page specific */
+  .rate-block {
+    background: var(--cream);
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 0.8rem 0;
+    text-align: left;
+  }
+  .rate-block .rate-etab {
+    font-family: 'Playfair Display';
+    font-size: 0.95rem;
+    color: var(--title);
+    margin-bottom: 0.2rem;
+  }
+  .rate-block .rate-date {
+    font-size: 0.72rem;
+    color: var(--text-soft);
+    margin-bottom: 0.6rem;
+  }
+  .rate-block .stars {
+    color: var(--champagne);
+    font-size: 1.1rem;
+    letter-spacing: 0.15em;
+  }
+  .rate-block .stars .filled { color: var(--burgundy); }
+
+  /* Recos cards */
+  .reco-hero {
+    background: var(--cream);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    text-align: left;
+    border: 1px solid var(--border);
+  }
+  .reco-hero .photo {
+    height: 130px;
+    background: linear-gradient(135deg, var(--champagne) 0%, var(--champagne-soft) 100%);
+    position: relative;
+  }
+  .reco-hero .photo::before {
+    content: '★ Royal Savoy';
+    position: absolute;
+    bottom: 0.6rem; left: 0.8rem;
+    color: var(--white);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+  }
+  .reco-hero .info {
+    padding: 0.8rem 1rem;
+  }
+  .reco-hero .info .cat {
+    font-size: 0.66rem;
+    color: var(--burgundy);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+  .reco-hero .info h3 {
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+  }
+  .reco-hero .info .meta {
+    font-size: 0.72rem;
+    color: var(--text-soft);
+  }
+  .reco-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+  .reco-mini {
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    text-align: left;
+  }
+  .reco-mini .ph {
+    height: 64px;
+    background: linear-gradient(135deg, var(--champagne-soft), var(--cream-warm));
+  }
+  .reco-mini .info {
+    padding: 0.5rem 0.6rem;
+  }
+  .reco-mini .info .nm {
+    font-family: 'Playfair Display';
+    font-size: 0.72rem;
+    color: var(--title);
+    line-height: 1.2;
+  }
+  .reco-mini .info .ct {
+    font-size: 0.6rem;
+    color: var(--text-soft);
+    margin-top: 0.2rem;
+  }
+
+  /* Bilan stats */
+  .bilan-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+  .bilan-stats .b-cell {
+    background: var(--cream);
+    border-radius: 4px;
+    padding: 0.9rem 0.4rem;
+  }
+  .bilan-stats .b-num {
+    font-family: 'Playfair Display';
+    font-size: 1.7rem;
+    color: var(--burgundy);
+    font-weight: 500;
+    line-height: 1;
+  }
+  .bilan-stats .b-lbl {
+    font-size: 0.62rem;
+    color: var(--text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 0.3rem;
+  }
+  .bilan-visits {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .bilan-visits .v {
+    background: var(--cream);
+    border-radius: 4px;
+    padding: 0.6rem 0.7rem;
+    text-align: left;
+    font-size: 0.74rem;
+  }
+  .bilan-visits .v .vn {
+    font-family: 'Playfair Display';
+    color: var(--title);
+    margin-bottom: 0.15rem;
+  }
+  .bilan-visits .v .vd {
+    color: var(--text-soft);
+    font-size: 0.66rem;
+  }
+
+  /* ============ JOURNEY SCHEMA ============ */
+  .journey {
+    background: var(--cream);
+    border-radius: 6px;
+    padding: 2rem 1.5rem;
+    overflow-x: auto;
+  }
+  .journey-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .j-step {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    text-align: center;
+    min-width: 130px;
+    max-width: 180px;
+    flex: 0 0 auto;
+  }
+  .j-step .j-kind {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--burgundy);
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+  .j-step .j-label {
+    font-family: 'Playfair Display';
+    font-size: 0.92rem;
+    color: var(--title);
+    line-height: 1.3;
+  }
+  .j-step.trigger { border-color: var(--burgundy); background: rgba(163, 105, 91, 0.06); }
+  .j-step.email { background: var(--champagne-soft); border-color: var(--champagne); }
+  .j-arrow {
+    color: var(--burgundy);
+    font-size: 1.4rem;
+    flex: 0 0 auto;
+    align-self: center;
+  }
+
+  /* ============ GITHUB TAB ============ */
+  .gh-explainer {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+  }
+  .gh-explainer h3 { color: var(--burgundy); }
+  .gh-analogy {
+    background: var(--cream-warm);
+    border-left: 3px solid var(--burgundy);
+    padding: 1.3rem 1.5rem;
+    border-radius: 0 4px 4px 0;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--text);
+  }
+  .gh-analogy strong { font-style: normal; color: var(--burgundy); }
+  .repos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.2rem;
+    margin: 2rem 0;
+  }
+  .repo-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.6rem;
+  }
+  .repo-card .repo-name {
+    font-family: 'Source Sans 3';
+    font-size: 0.92rem;
+    color: var(--burgundy);
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    word-break: break-word;
+  }
+  .repo-card h4 { margin-bottom: 0.6rem; font-size: 1.15rem; }
+  .repo-card .repo-desc {
+    font-size: 0.9rem;
+    color: var(--text-soft);
+    margin-bottom: 1rem;
+  }
+  .repo-card .repo-visibility {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+  }
+  .repo-card .repo-visibility.public { background: rgba(91, 122, 85, 0.12); color: var(--green); }
+  .repo-card .repo-visibility.private { background: rgba(107, 107, 107, 0.12); color: var(--slate); }
+
+  /* ============ REAL LINKS (boutons "Voir en vrai") ============ */
+  .real-links {
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-top: 1.4rem;
+    flex-wrap: wrap;
+  }
+  .real-link {
+    background: var(--white);
+    border: 1px solid var(--burgundy);
+    color: var(--burgundy);
+    padding: 0.6rem 1.4rem;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .real-link:hover {
+    background: var(--burgundy);
+    color: var(--white);
+  }
+
+  /* ============ FOOTER ============ */
+  .footer-section {
+    text-align: center;
+    padding: 3rem 0 0;
+    margin-top: 4rem;
+    border-top: 1px solid var(--border);
+  }
+  .footer-section img { height: 60px; opacity: 0.85; margin-bottom: 1.2rem; }
+  .footer-section p {
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 900px) {
+    .preview-row { grid-template-columns: 1fr; }
+    .preview-row.single { max-width: 100%; }
+  }
+  @media (max-width: 768px) {
+    .top-header { padding: 1rem 1.2rem; }
+    .top-header .logo { height: 48px; }
+    .top-header .title-main { font-size: 1rem; }
+    .top-header .title-eyebrow { font-size: 0.6rem; }
+    .tabs-wrap { top: 81px; }
+    main { padding: 2rem 1.2rem 4rem; }
+    .hero { padding: 2rem 1.5rem; }
+    .hero h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .status-row { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.2rem; }
+    .info-grid { grid-template-columns: 1fr; }
+    .modal-overlay { padding: 1rem; }
+    .modal-head, .modal-body { padding: 1.5rem; }
+    .tabs { padding: 0 1rem; }
+    .tab-btn { padding: 0.9rem 1rem; font-size: 0.88rem; }
+    .pipeline-card, .gh-explainer { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="top-header">
+  <img src="assets/logo.png" alt="Body Pass" class="logo">
+  <div style="text-align: right;">
+    <div class="title-eyebrow">Pour l'équipe</div>
+    <div class="title-main">Les coulisses du projet</div>
+  </div>
+</header>
+
+<!-- ============ TABS ============ -->
+<div class="tabs-wrap">
+  <nav class="tabs" role="tablist">
+    <button class="tab-btn active" data-tab="overview" role="tab">Vue d'ensemble</button>
+    <button class="tab-btn" data-tab="pipelines" role="tab">Les pipelines</button>
+    <button class="tab-btn" data-tab="campagnes" role="tab">Les campagnes</button>
+    <button class="tab-btn" data-tab="github" role="tab">Le coffre GitHub</button>
+  </nav>
+</div>
+
+<main>
+
+  <!-- ============================================ -->
+  <!-- =========== VUE D'ENSEMBLE ================= -->
+  <!-- ============================================ -->
+  <section class="panel active" id="overview">
+
+    <div class="hero">
+      <div class="eyebrow">Ce qu'on construit</div>
+      <h1>Donner à <em>chaque porteur</em> et à <em>chaque partenaire</em> une expérience qui leur ressemble.</h1>
+      <p class="lead">
+        Pendant les derniers mois, on a transformé les données Body Pass — porteurs, établissements, visites — en un système qui envoie le bon message à la bonne personne, au bon moment. Cette page raconte simplement ce qu'on a construit, ce qu'on prépare, et comment tout ça tient ensemble.
+      </p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">10</div>
+        <div class="stat-label">Campagnes au total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">2</div>
+        <div class="stat-label">Pipelines automatiques</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">~4 000</div>
+        <div class="stat-label">Porteurs suivis chaque jour</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Espaces de code (GitHub)</div>
+      </div>
+    </div>
+
+    <div class="reading-guide">
+      <h3>Comment lire cette page</h3>
+      <ul>
+        <li><strong>Les pipelines :</strong> les « moteurs » qui tournent en silence dans le fond. Ce sont eux qui rafraîchissent les données et préparent les envois.</li>
+        <li><strong>Les campagnes :</strong> les emails eux-mêmes. Chaque campagne a une cible, un objectif business, un aperçu visuel et un schéma de parcours.</li>
+        <li><strong>Le coffre GitHub :</strong> où sont rangés les codes et les pages personnalisées qu'on prépare pour les porteurs.</li>
+      </ul>
+    </div>
+
+    <div class="status-card">
+      <div class="status-card-head">
+        <div class="eyebrow">État au 23 mai 2026</div>
+        <h2>Où en est chaque campagne</h2>
+        <p>Du plus avancé au plus amont. Cliquez sur l'onglet « Les campagnes » pour voir le détail de chacune.</p>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Hier Notations</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Pipeline 100% construit, Customer Journey Mailchimp créé en brouillon, écriture des notations dans la Google Sheet confirmée. Reste à tester en dry-run sur julieta puis activer le journey.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Notations Mai 2026</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Campagne « grand coup » sur les porteurs des 12 derniers mois. Audience à confirmer, date à fixer.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Économies cumulées</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Brouillon créé, 1 051 destinataires réels confirmés. Idéalement envoyée le 1<sup>er</sup> de chaque mois. Vérification finale puis clic « Programmer ».</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Amortissement</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Template et logique de déclenchement validés. Reste à brancher le workflow de pose d'étiquettes quotidienne.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Utilisation J+30</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Pipeline tag-based déployé, Customer Journey Mailchimp configuré, page perso et template prêts. Premier blast réel imminent.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Bilan mensuel</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Workflow complet construit (mode test actif), template et segment prêts (384 destinataires). Idéalement envoyée le 15 de chaque mois, pour ne pas faire doublon avec Économies cumulées qui part le 1<sup>er</sup>.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Activation</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Pipeline greffé et déployé, 481 acheteurs taggés. Customer Journey Mailchimp avec ses 2 emails J+7 et J+21 en brouillon, prêt à activer.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Newly Activated</div>
+        <div><span class="badge dev">En construction</span></div>
+        <div class="status-detail">Segment Mailchimp et email de bienvenue prêts (single touch J+1). Reste à créer la campagne récurrente et à tester sur julieta.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Renouvellement</div>
+        <div><span class="badge todo">À venir</span></div>
+        <div class="status-detail">Le levier business le plus important. Logique à aligner en interne avant tout développement.</div>
+      </div>
+
+      <div class="status-row">
+        <div class="status-name">Ideas</div>
+        <div><span class="badge todo">À venir</span></div>
+        <div class="status-detail">Idées de nouveautés à explorer (campagnes saisonnières, parrainage, milestones). À discuter en équipe.</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================ -->
+  <!-- =========== PIPELINES ====================== -->
+  <!-- ============================================ -->
+  <section class="panel" id="pipelines">
+
+    <div class="section-intro">
+      <div class="eyebrow">Les moteurs en arrière-plan</div>
+      <h2>Deux pipelines, deux missions</h2>
+      <p>Un pipeline, c'est une chaîne d'étapes qui s'exécute toute seule chaque matin. Personne n'a besoin de cliquer — la machine fait son travail pendant qu'on dort.</p>
+    </div>
+
+    <!-- Pipeline 1 -->
+    <div class="pipeline-card">
+      <div class="pipeline-head">
+        <div class="title-block">
+          <div class="eyebrow">Pipeline n°1 — Actif</div>
+          <h3>La mise à jour quotidienne des profils</h3>
+          <p class="subtitle">Tourne chaque matin à 6h30, sans interruption.</p>
+        </div>
+        <span class="badge live">Actif chaque jour</span>
+      </div>
+
+      <p>Chaque nuit, l'équipe tech de Body Pass exporte les données fraîches (porteurs, cartes, visites, établissements) et les envoie par email à une boîte dédiée. Le matin à 6h30, notre pipeline prend le relais :</p>
+
+      <div class="pipeline-section">
+        <h4>Ce qu'il fait, étape par étape</h4>
+        <div class="schema">
+          <svg viewBox="0 0 920 200" xmlns="http://www.w3.org/2000/svg">
+            <g font-family="'Source Sans 3', sans-serif">
+              <rect x="10" y="60" width="150" height="80" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+              <text x="85" y="90" text-anchor="middle" font-size="11" fill="#A3695B" font-weight="600" letter-spacing="1.5">ÉTAPE 1</text>
+              <text x="85" y="110" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">Récupération</text>
+              <text x="85" y="127" text-anchor="middle" font-size="11" fill="#7A746F">des CSV par mail</text>
+
+              <line x1="165" y1="100" x2="195" y2="100" stroke="#A3695B" stroke-width="1.5"/>
+              <polygon points="195,96 203,100 195,104" fill="#A3695B"/>
+
+              <rect x="208" y="60" width="150" height="80" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+              <text x="283" y="90" text-anchor="middle" font-size="11" fill="#A3695B" font-weight="600" letter-spacing="1.5">ÉTAPE 2</text>
+              <text x="283" y="110" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">Calculs</text>
+              <text x="283" y="127" text-anchor="middle" font-size="11" fill="#7A746F">économies, statuts...</text>
+
+              <line x1="363" y1="100" x2="393" y2="100" stroke="#A3695B" stroke-width="1.5"/>
+              <polygon points="393,96 401,100 393,104" fill="#A3695B"/>
+
+              <rect x="406" y="60" width="150" height="80" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+              <text x="481" y="90" text-anchor="middle" font-size="11" fill="#A3695B" font-weight="600" letter-spacing="1.5">ÉTAPE 3</text>
+              <text x="481" y="110" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">Mise à jour</text>
+              <text x="481" y="127" text-anchor="middle" font-size="11" fill="#7A746F">de chaque profil</text>
+
+              <line x1="561" y1="100" x2="591" y2="100" stroke="#A3695B" stroke-width="1.5"/>
+              <polygon points="591,96 599,100 591,104" fill="#A3695B"/>
+
+              <rect x="604" y="60" width="150" height="80" rx="4" fill="#E8DFCE" stroke="#A3695B" stroke-width="1.5"/>
+              <text x="679" y="90" text-anchor="middle" font-size="11" fill="#A3695B" font-weight="600" letter-spacing="1.5">RÉSULTAT</text>
+              <text x="679" y="110" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">Mailchimp</text>
+              <text x="679" y="127" text-anchor="middle" font-size="11" fill="#54504E">à jour, prêt à envoyer</text>
+
+              <line x1="759" y1="100" x2="789" y2="100" stroke="#A3695B" stroke-width="1.5"/>
+              <polygon points="789,96 797,100 789,104" fill="#A3695B"/>
+              <rect x="800" y="85" width="100" height="30" rx="3" fill="#A3695B"/>
+              <text x="850" y="105" text-anchor="middle" font-size="12" fill="#FFFFFF" font-weight="600" letter-spacing="1">EMAILS</text>
+
+              <text x="460" y="30" text-anchor="middle" font-size="11" fill="#7A746F" letter-spacing="2" font-weight="600">RÉPÉTÉ AUTOMATIQUEMENT CHAQUE JOUR À 6H30</text>
+              <line x1="180" y1="40" x2="730" y2="40" stroke="#C2B59B" stroke-width="0.5" stroke-dasharray="2,3"/>
+              <text x="460" y="180" text-anchor="middle" font-size="11" fill="#7A746F" font-style="italic">Environ 4 000 profils rafraîchis chaque matin</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="pipeline-section">
+        <h4>À quoi ça sert concrètement</h4>
+        <p>
+          Ce pipeline permet à chaque email d'être <strong>personnalisé et à jour</strong>. Quand on parle des économies de Maria, ce sont ses vraies économies d'aujourd'hui. Quand on lui dit qu'elle est passée chez Royal Savoy hier, c'est qu'elle est vraiment passée chez Royal Savoy hier. Tous les messages s'appuient sur cette base fraîche : qui a une carte active, qui approche de l'échéance, combien chacun a économisé, quel établissement chacun a visité. <strong>C'est le socle commun à toutes les campagnes.</strong>
+        </p>
+      </div>
+
+      <div class="pipeline-section">
+        <h4>Sécurités en place</h4>
+        <p>Si une étape ne se passe pas comme prévu, un email d'alerte arrive automatiquement chez Julieta — la machine prévient et attend qu'on vienne voir. Aucune chance qu'elle continue tête baissée si quelque chose cloche.</p>
+      </div>
+    </div>
+
+    <!-- Pipeline 2 -->
+    <div class="pipeline-card">
+      <div class="pipeline-head">
+        <div class="title-block">
+          <div class="eyebrow">Pipeline n°2 — En préparation</div>
+          <h3>Le moteur de campagnes personnalisées</h3>
+          <p class="subtitle">Tourne chaque matin à 6h45, juste après le premier pipeline.</p>
+        </div>
+        <span class="badge dev">En construction</span>
+      </div>
+
+      <p>Plusieurs campagnes (Hier Notations, Utilisation J+30, Bilan mensuel) envoient un lien vers une <strong>page personnelle pour ce porteur uniquement</strong> — avec sa dernière visite, ses recommandations, ses chiffres du mois. Ce deuxième pipeline est celui qui prépare ces pages.</p>
+
+      <div class="pipeline-section">
+        <h4>Ce qu'il fait, étape par étape</h4>
+        <div class="schema">
+          <svg viewBox="0 0 920 240" xmlns="http://www.w3.org/2000/svg">
+            <g font-family="'Source Sans 3', sans-serif">
+              <rect x="10" y="40" width="160" height="70" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+              <text x="90" y="65" text-anchor="middle" font-size="10" fill="#A3695B" font-weight="600" letter-spacing="1.5">ÉTAPE 1</text>
+              <text x="90" y="85" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">Lecture</text>
+              <text x="90" y="100" text-anchor="middle" font-size="10" fill="#7A746F">des CSV du matin</text>
+
+              <line x1="175" y1="75" x2="205" y2="75" stroke="#A3695B" stroke-width="1.5"/>
+              <polygon points="205,71 213,75 205,79" fill="#A3695B"/>
+
+              <rect x="218" y="40" width="180" height="70" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+              <text x="308" y="65" text-anchor="middle" font-size="10" fill="#A3695B" font-weight="600" letter-spacing="1.5">ÉTAPE 2</text>
+              <text x="308" y="85" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">Calcul des recos</text>
+              <text x="308" y="100" text-anchor="middle" font-size="10" fill="#7A746F">par profil de porteur</text>
+
+              <line x1="403" y1="75" x2="433" y2="75" stroke="#A3695B" stroke-width="1.5"/>
+              <polygon points="433,71 441,75 433,79" fill="#A3695B"/>
+
+              <rect x="446" y="40" width="200" height="70" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+              <text x="546" y="65" text-anchor="middle" font-size="10" fill="#A3695B" font-weight="600" letter-spacing="1.5">ÉTAPE 3</text>
+              <text x="546" y="85" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">Publication des pages</text>
+              <text x="546" y="100" text-anchor="middle" font-size="10" fill="#7A746F">sur GitHub Pages</text>
+
+              <line x1="651" y1="75" x2="681" y2="75" stroke="#A3695B" stroke-width="1.5"/>
+              <polygon points="681,71 689,75 681,79" fill="#A3695B"/>
+
+              <rect x="694" y="40" width="200" height="70" rx="4" fill="#E8DFCE" stroke="#A3695B" stroke-width="1.5"/>
+              <text x="794" y="65" text-anchor="middle" font-size="10" fill="#A3695B" font-weight="600" letter-spacing="1.5">RÉSULTAT</text>
+              <text x="794" y="85" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">Lien unique par porteur</text>
+              <text x="794" y="100" text-anchor="middle" font-size="10" fill="#54504E">prêt à mettre dans l'email</text>
+
+              <text x="460" y="170" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'" font-style="italic">↓</text>
+              <text x="460" y="190" text-anchor="middle" font-size="12" fill="#54504E">Quand le porteur clique sur « Voir ma sélection » dans l'email,</text>
+              <text x="460" y="208" text-anchor="middle" font-size="12" fill="#54504E">il atterrit sur sa page personnelle, préparée pour lui ce matin-là.</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <div class="pipeline-section">
+        <h4>À quoi ça sert concrètement</h4>
+        <p>Ce moteur permet de passer d'un email générique à un message qui ressemble vraiment à <em>cette</em> personne. Il calcule pour chaque porteur ses propres recommandations (catégorie qu'il préfère, canton qu'il fréquente, établissements pas encore essayés), fabrique une mini-page web dédiée, et donne un lien personnel à Mailchimp pour qu'il l'insère dans le bon email au bon moment.</p>
+      </div>
+
+      <div class="pipeline-section">
+        <h4>État actuel</h4>
+        <p>Le code Python qui calcule les recommandations est écrit et a déjà tourné avec succès sur les vraies données (27 porteurs traités en mode test pour Utilisation J+30, avec 100% des recommandations trouvées). L'orchestration automatique — c'est-à-dire le déclencheur du matin qui lance tout ça sans intervention humaine — est en cours de construction.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================ -->
+  <!-- =========== CAMPAGNES ====================== -->
+  <!-- ============================================ -->
+  <section class="panel" id="campagnes">
+
+    <div class="section-intro">
+      <div class="eyebrow">Les communications elles-mêmes</div>
+      <h2>Les campagnes, une par une</h2>
+      <p>Cliquez sur une carte pour voir le détail : pour qui, pourquoi, à quoi ressemble l'email et la page personnelle (quand il y en a une).</p>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">Toutes</button>
+      <button class="filter-btn" data-filter="brouillon">Brouillon prêt</button>
+      <button class="filter-btn" data-filter="etl">ETL en construction</button>
+      <button class="filter-btn" data-filter="dev">En construction</button>
+      <button class="filter-btn" data-filter="todo">À venir</button>
+    </div>
+
+    <div class="campagnes-grid" id="campagnesGrid"></div>
+
+  </section>
+
+  <!-- ============================================ -->
+  <!-- =========== GITHUB ========================= -->
+  <!-- ============================================ -->
+  <section class="panel" id="github">
+
+    <div class="section-intro">
+      <div class="eyebrow">L'envers du décor numérique</div>
+      <h2>Le coffre GitHub</h2>
+      <p>GitHub est notre coffre-fort à codes — un endroit en ligne où l'on range, version après version, tout ce que la machine doit savoir faire.</p>
+    </div>
+
+    <div class="gh-explainer">
+      <h3>C'est quoi GitHub, en deux phrases ?</h3>
+      <p>GitHub, c'est un Google Drive pour les codes. Chaque petit programme qu'on écrit — pour calculer les économies, pour générer les pages personnelles, pour orchestrer les envois — vit dans un <strong>dossier en ligne qu'on appelle un « repo »</strong> (raccourci de « repository », c'est-à-dire « dépôt »).</p>
+
+      <div class="gh-analogy">
+        <strong>L'analogie :</strong> imaginez la cuisine d'un restaurant. Chaque recette (= chaque programme) vit dans son propre classeur (= un repo). Tous les classeurs sont rangés dans une seule bibliothèque (= l'organisation <em>bodypass-ch</em>). Quand on améliore une recette, l'ancien classeur n'est pas jeté — il reste consultable, donc on peut toujours revenir en arrière si la nouvelle version ne marche pas.
+      </div>
+
+      <p>L'autre avantage de GitHub : il offre gratuitement un <strong>hébergement web</strong> appelé « GitHub Pages ». C'est ce qui nous permet de publier les pages personnalisées des porteurs (par exemple <em>bodypass-ch.github.io/hier-notations</em>) sans payer de serveur.</p>
+    </div>
+
+    <div class="gh-explainer">
+      <h3>Nos repos — ce qu'on garde dans chacun</h3>
+      <p style="margin-bottom: 0;">Tous nos repos sont rangés sous une seule adresse : <strong>github.com/bodypass-ch</strong>. Six repos, six missions distinctes.</p>
+
+      <div class="repos-grid">
+        <div class="repo-card">
+          <span class="repo-visibility private">Privé</span>
+          <div class="repo-name" style="margin-top: 0.5rem;">bodypass-campaigns-engine</div>
+          <h4>Le cerveau</h4>
+          <p class="repo-desc">Le code Python qui lit les CSV chaque matin et calcule, pour chaque porteur, ses recommandations. C'est lui qui « pense » les pages personnelles avant de les fabriquer.</p>
+        </div>
+
+        <div class="repo-card">
+          <span class="repo-visibility public">Public</span>
+          <div class="repo-name" style="margin-top: 0.5rem;">hier-notations</div>
+          <h4>Les pages « Notez votre visite »</h4>
+          <p class="repo-desc">Là où vivent les pages qu'un porteur voit en cliquant sur le mail de notation. Une page = un porteur, mise à jour chaque matin avec ses dernières visites.</p>
+        </div>
+
+        <div class="repo-card">
+          <span class="repo-visibility public">Public</span>
+          <div class="repo-name" style="margin-top: 0.5rem;">utilisation-30d</div>
+          <h4>Les pages « Vos recommandations »</h4>
+          <p class="repo-desc">Pages personnelles avec 4 cartes : la dernière visite du porteur, et 3 établissements qu'on lui suggère selon ses goûts et son canton.</p>
+        </div>
+
+        <div class="repo-card">
+          <span class="repo-visibility public">Public</span>
+          <div class="repo-name" style="margin-top: 0.5rem;">bilan-mensuel</div>
+          <h4>Les pages « Bilan du mois »</h4>
+          <p class="repo-desc">Style Spotify-Wrapped : nombre de visites du mois, catégorie préférée, économies, et 3 nouvelles propositions pour la suite.</p>
+        </div>
+
+        <div class="repo-card">
+          <span class="repo-visibility public">Public</span>
+          <div class="repo-name" style="margin-top: 0.5rem;">bodypass-assets</div>
+          <h4>La photothèque</h4>
+          <p class="repo-desc">Toutes les photos d'établissements qu'on utilise dans les pages personnelles. Un seul endroit centralisé pour ne pas dupliquer les fichiers.</p>
+        </div>
+
+        <div class="repo-card">
+          <span class="repo-visibility public">Public</span>
+          <div class="repo-name" style="margin-top: 0.5rem;">notations-mai</div>
+          <h4>La page « Notations Mai 2026 »</h4>
+          <p class="repo-desc">Variante d'Hier Notations dédiée à la campagne « grand coup » de mai sur les porteurs des 12 derniers mois. Audience plus large, même mécanique.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="gh-explainer">
+      <h3>Le voyage complet d'une donnée — du CSV au porteur</h3>
+      <p>Concrètement, voici ce qui se passe entre le moment où l'équipe tech envoie les CSV par mail et le moment où Maria clique sur « Voir ma sélection » dans sa boîte de réception.</p>
+
+      <div class="schema" style="margin-top: 2rem;">
+        <svg viewBox="0 0 920 480" xmlns="http://www.w3.org/2000/svg">
+          <g font-family="'Source Sans 3', sans-serif">
+            <rect x="340" y="20" width="240" height="60" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+            <text x="460" y="45" text-anchor="middle" font-size="11" fill="#A3695B" font-weight="600" letter-spacing="1.5">CHAQUE NUIT</text>
+            <text x="460" y="65" text-anchor="middle" font-size="14" fill="#2C2826" font-family="'Playfair Display'">L'équipe tech envoie les CSV</text>
+
+            <line x1="460" y1="80" x2="460" y2="110" stroke="#A3695B" stroke-width="1.5"/>
+            <polygon points="456,110 460,118 464,110" fill="#A3695B"/>
+
+            <rect x="280" y="125" width="360" height="80" rx="4" fill="#F2EBDF" stroke="#A3695B" stroke-width="1.5"/>
+            <text x="460" y="150" text-anchor="middle" font-size="11" fill="#A3695B" font-weight="600" letter-spacing="1.5">REPO : bodypass-campaigns-engine</text>
+            <text x="460" y="170" text-anchor="middle" font-size="15" fill="#2C2826" font-family="'Playfair Display'">Le moteur lit les CSV</text>
+            <text x="460" y="190" text-anchor="middle" font-size="12" fill="#54504E">et calcule les recommandations pour chaque porteur</text>
+
+            <line x1="380" y1="210" x2="280" y2="245" stroke="#A3695B" stroke-width="1.5"/>
+            <polygon points="282,242 280,250 287,247" fill="#A3695B"/>
+            <line x1="540" y1="210" x2="640" y2="245" stroke="#A3695B" stroke-width="1.5"/>
+            <polygon points="638,247 640,250 633,243" fill="#A3695B"/>
+            <line x1="460" y1="210" x2="460" y2="245" stroke="#A3695B" stroke-width="1.5"/>
+            <polygon points="456,245 460,253 464,245" fill="#A3695B"/>
+
+            <rect x="60" y="255" width="240" height="70" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+            <text x="180" y="278" text-anchor="middle" font-size="10" fill="#A3695B" font-weight="600" letter-spacing="1.5">REPO PUBLIC</text>
+            <text x="180" y="297" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">hier-notations</text>
+            <text x="180" y="313" text-anchor="middle" font-size="11" fill="#7A746F">pages « Notez votre visite »</text>
+
+            <rect x="340" y="255" width="240" height="70" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+            <text x="460" y="278" text-anchor="middle" font-size="10" fill="#A3695B" font-weight="600" letter-spacing="1.5">REPO PUBLIC</text>
+            <text x="460" y="297" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">utilisation-30d</text>
+            <text x="460" y="313" text-anchor="middle" font-size="11" fill="#7A746F">pages « Vos recommandations »</text>
+
+            <rect x="620" y="255" width="240" height="70" rx="4" fill="#FFFFFF" stroke="#C2B59B" stroke-width="1.5"/>
+            <text x="740" y="278" text-anchor="middle" font-size="10" fill="#A3695B" font-weight="600" letter-spacing="1.5">REPO PUBLIC</text>
+            <text x="740" y="297" text-anchor="middle" font-size="13" fill="#2C2826" font-family="'Playfair Display'">bilan-mensuel</text>
+            <text x="740" y="313" text-anchor="middle" font-size="11" fill="#7A746F">pages « Bilan du mois »</text>
+
+            <line x1="180" y1="325" x2="380" y2="365" stroke="#A3695B" stroke-width="1.5"/>
+            <line x1="460" y1="325" x2="460" y2="365" stroke="#A3695B" stroke-width="1.5"/>
+            <line x1="740" y1="325" x2="540" y2="365" stroke="#A3695B" stroke-width="1.5"/>
+
+            <rect x="300" y="375" width="320" height="60" rx="4" fill="#E8DFCE" stroke="#A3695B" stroke-width="1.5"/>
+            <text x="460" y="400" text-anchor="middle" font-size="11" fill="#A3695B" font-weight="600" letter-spacing="1.5">MAILCHIMP</text>
+            <text x="460" y="420" text-anchor="middle" font-size="14" fill="#2C2826" font-family="'Playfair Display'">Insère le lien personnel dans l'email</text>
+
+            <line x1="460" y1="435" x2="460" y2="455" stroke="#A3695B" stroke-width="1.5"/>
+            <polygon points="456,455 460,463 464,455" fill="#A3695B"/>
+
+            <text x="460" y="475" text-anchor="middle" font-size="13" fill="#54504E" font-style="italic">Maria clique → atterrit sur sa page personnalisée</text>
+          </g>
+        </svg>
+      </div>
+
+      <p style="margin-top: 1rem;">À noter : le porteur ne voit jamais « GitHub » ni « repo ». Pour lui, c'est juste une jolie page Body Pass qui s'ouvre quand il clique sur le bouton de l'email. Toute la mécanique est invisible.</p>
+    </div>
+
+    <div class="gh-explainer">
+      <h3>Pourquoi GitHub plutôt qu'autre chose ?</h3>
+      <p>Trois raisons concrètes pour Body Pass :</p>
+      <p><strong>Gratuit pour notre usage.</strong> Tant qu'on reste sous une certaine taille (qu'on est loin d'atteindre), l'hébergement des pages personnelles ne coûte rien.</p>
+      <p><strong>Historique complet.</strong> Chaque modification de code est enregistrée avec la date, l'auteur et le détail du changement. Si quelque chose casse demain, on peut revenir à la version d'hier en quelques clics.</p>
+      <p><strong>Standard du marché.</strong> Si un nouveau prestataire reprend une partie du projet, il connaît GitHub. Pas de formation, pas de système maison à découvrir.</p>
+    </div>
+
+  </section>
+
+  <div class="footer-section">
+    <img src="assets/logo.png" alt="Body Pass">
+    <p>Body Pass · Le passeport bien-être suisse · 15<sup>e</sup> édition</p>
+  </div>
+
+</main>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+/* ============================================ */
+/* ==== DONNÉES DES CAMPAGNES ================= */
+/* ============================================ */
+
+// Helper : aperçu d'idée d'email (pas le rendu final — juste pour visualiser)
+function emailFrame(opts) {
+  const { from, subject, preheader, bodyHTML } = opts;
+  return `
+    <div class="email-frame">
+      <div class="email-meta">
+        <div>De : ${from}</div>
+        <div class="subject">Objet : ${subject}</div>
+        ${preheader ? `<div class="preheader">${preheader}</div>` : ''}
+      </div>
+      <div class="email-body">
+        <img src="assets/logo.png" class="email-logo" alt="Body Pass">
+        ${bodyHTML}
+      </div>
+    </div>
+  `;
+}
+
+// Helper : navigateur "screenshot" wrapper
+function browserFrame(url, contentHTML) {
+  return `
+    <div class="browser-frame">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">${url}</div>
+      </div>
+      <div class="browser-content">
+        <div class="page-inner">${contentHTML}</div>
+      </div>
+    </div>
+  `;
+}
+
+const campagnes = [
+  /* ===================================================== */
+  /* === HIER NOTATIONS ================================== */
+  /* ===================================================== */
+  {
+    id: 'hier-notations',
+    name: 'Hier Notations',
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
+    oneLiner: "Chaque porteur reçoit un email le lendemain de sa visite, l'invitant à noter son expérience.",
+    pourQui: "Tous les porteurs qui ont visité un établissement la veille (1 jour après la visite, recalculé chaque nuit).",
+    pourQuoi: "Récolter des avis pendant que le souvenir de la visite est encore frais. Ces notes alimentent à terme un score de qualité pour piloter le réseau partenaire.",
+    commentMarche: "Le pipeline du matin identifie les porteurs ayant visité hier, prépare leur page personnelle de notation (avec leur visite préremplie), et Mailchimp envoie automatiquement l'email le lendemain matin.",
+    frequence: "Quotidien, automatique",
+    audience: "Variable — 20 à 50 porteurs par jour attendus",
+    statutLong: "Pipeline 100% construit et validé : ETL quotidien opérationnel, Customer Journey Mailchimp créé (en brouillon), Apps Script de collecte déployé et confirmé en écriture (colonne campagne ajoutée et validée par un test bout en bout). Reste 3 étapes humaines : tester quelques jours en dry-run sur julieta@bodypass.ch, basculer le Customer Journey de Brouillon à Actif, puis relire les premiers envois réels avant de laisser tourner en autonomie.",
+    journey: [
+      { kind: 'Déclencheur', label: '1 jour après une visite', type: 'trigger' },
+      { kind: 'Email', label: '« Comment s\'est passée votre visite ? »', type: 'email' },
+      { kind: 'Page perso', label: 'Page de notation préremplie', type: 'action' }
+    ],
+    email: {
+      from: 'Body Pass &lt;info@bodypass.ch&gt;',
+      subject: 'Comment s\'est passé votre passage chez Royal Savoy ?',
+      preheader: 'Quelques secondes suffisent pour partager votre avis',
+      bodyHTML: `
+        <h1>Bonjour Maria,</h1>
+        <p>Vous êtes passée hier chez <strong>Royal Savoy</strong>. Comment s'est passé ce moment ?</p>
+        <p>Notez votre visite en quelques secondes. Votre avis nous aide à veiller sur la qualité de chaque adresse du réseau Body Pass.</p>
+        <a href="#" class="email-cta">Noter ma visite</a>
+        <div class="email-closing">
+          <p>À très vite,</p>
+          <div class="signature">L'équipe Body Pass</div>
+        </div>
+      `
+    },
+    realEmail: '../email-notation-quotidienne.html',
+    realPage: 'https://bodypass-ch.github.io/hier-notations/',
+    htmlPage: {
+      url: 'bodypass-ch.github.io/hier-notations/?t=a3f9c2b',
+      contentHTML: `
+        <img src="assets/logo.png" class="page-logo" alt="Body Pass">
+        <h1>Bonjour Maria,</h1>
+        <p>Comment s'est passé votre passage hier chez <strong>Royal Savoy</strong> ?</p>
+        <div class="rate-block">
+          <div class="rate-etab">Royal Savoy</div>
+          <div class="rate-date">21 mai 2026 · Spa & Hammam</div>
+          <div class="stars"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span>★</span></div>
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-soft);">Un mot à ajouter ? (facultatif)</p>
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: 4px; padding: 0.8rem; height: 60px; text-align: left; font-size: 0.78rem; color: var(--text-soft); font-style: italic;">Une expérience reposante, merci...</div>
+        <div style="margin-top: 1rem;"><span style="background: var(--burgundy); color: var(--white); padding: 0.6rem 1.4rem; border-radius: 3px; font-size: 0.82rem; letter-spacing: 0.04em;">Envoyer ma note</span></div>
+      `
+    }
+  },
+
+  /* ===================================================== */
+  /* === NOTATIONS MAI 2026 ============================== */
+  /* ===================================================== */
+  {
+    id: 'notations-mai',
+    name: 'Notations Mai 2026',
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
+    oneLiner: "Envoi « grand coup » à tous les porteurs ayant visité dans les 12 derniers mois.",
+    pourQui: "Tous les porteurs avec au moins une visite sur les 12 derniers mois glissants.",
+    pourQuoi: "Récolter un maximum d'avis en une vague pour densifier la base de notations (Hier Notations ne couvre que les visites quotidiennes depuis sa mise en route).",
+    commentMarche: "Même mécanique qu'Hier Notations (page personnelle de notation avec visites préremplies), mais sur une audience beaucoup plus large et en un seul envoi.",
+    frequence: "One-shot",
+    audience: "À confirmer — probablement plus d'un millier de porteurs",
+    statutLong: "Brouillon Mailchimp prêt, audience à finaliser, date d'envoi à fixer.",
+    journey: [
+      { kind: 'Déclencheur', label: 'Envoi manuel décidé', type: 'trigger' },
+      { kind: 'Filtre', label: 'Visite sur 12 mois glissants', type: 'action' },
+      { kind: 'Email', label: '« Notez vos expériences »', type: 'email' },
+      { kind: 'Page perso', label: 'Liste des visites + form', type: 'action' }
+    ],
+    email: {
+      from: 'Body Pass &lt;info@bodypass.ch&gt;',
+      subject: 'Vos expériences Body Pass des 12 derniers mois',
+      preheader: 'Quelques secondes pour noter ce qui vous a marqué',
+      bodyHTML: `
+        <h1>Bonjour Maria,</h1>
+        <p>Cette année, vous avez profité de plusieurs établissements du réseau Body Pass. Votre avis sur ces moments nous aide à veiller sur la qualité de chaque adresse.</p>
+        <p>Quelques secondes suffisent pour partager ce qui vous a plu — et ce qui vous a moins plu.</p>
+        <a href="#" class="email-cta">Noter mes visites</a>
+        <div class="email-closing">
+          <p>Merci d'avance,</p>
+          <div class="signature">L'équipe Body Pass</div>
+        </div>
+      `
+    },
+    realEmail: '../email-notation-quotidienne.html',
+    realPage: 'https://bodypass-ch.github.io/notations-mai/',
+    htmlPage: {
+      url: 'bodypass-ch.github.io/notations-mai/?t=a3f9c2b',
+      contentHTML: `
+        <img src="assets/logo.png" class="page-logo" alt="Body Pass">
+        <h1>Bonjour Maria,</h1>
+        <p>Voici les 8 expériences que vous avez vécues cette année.</p>
+        <div class="rate-block">
+          <div class="rate-etab">Royal Savoy</div>
+          <div class="rate-date">21 mai 2026 · Spa & Hammam</div>
+          <div class="stars"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span>★</span></div>
+        </div>
+        <div class="rate-block">
+          <div class="rate-etab">Bain Bleu Genève</div>
+          <div class="rate-date">14 avril 2026 · Bains thermaux</div>
+          <div class="stars"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span></div>
+        </div>
+        <div class="rate-block">
+          <div class="rate-etab">Lausanne Palace Spa</div>
+          <div class="rate-date">2 mars 2026 · Spa 5 étoiles</div>
+          <div class="stars"><span class="filled">★</span><span class="filled">★</span><span class="filled">★</span><span>★</span><span>★</span></div>
+        </div>
+      `
+    }
+  },
+
+  /* ===================================================== */
+  /* === ÉCONOMIES CUMULÉES ============================== */
+  /* ===================================================== */
+  {
+    id: 'economies-cumulees',
+    name: 'Économies cumulées',
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
+    oneLiner: "Chaque 1er du mois, on rappelle au porteur combien il a économisé en tout depuis son achat.",
+    pourQui: "Tous les porteurs avec une carte active et au moins 1 CHF d'économies. Environ 1 575 personnes actuellement.",
+    pourQuoi: "Ancrer la valeur perçue avant le renouvellement. Plus le chiffre cumulé est gros, plus le porteur a envie de garder sa carte.",
+    commentMarche: "Campagne programmée dans Mailchimp, idéalement envoyée le 1er de chaque mois. Le chiffre d'économies est lu automatiquement sur chaque profil et inséré dans l'email.",
+    frequence: "Mensuel — idéalement le 1er de chaque mois",
+    audience: "1 051 destinataires réels (1 575 contacts dans le segment)",
+    statutLong: "Brouillon Mailchimp créé (campaign_id 18177686), template et segment prêts, 1 051 destinataires réels confirmés. Idéalement envoyée le 1<sup>er</sup> de chaque mois. Reste à vérifier que les chiffres d'économies se substituent bien dans l'aperçu, puis cliquer « Programmer » pour démarrer le cycle mensuel.",
+    journey: [
+      { kind: 'Déclencheur', label: 'Mensuel — idéalement le 1er', type: 'trigger' },
+      { kind: 'Filtre', label: 'Carte active + économies > 0', type: 'action' },
+      { kind: 'Exclusions', label: 'Non-activés, J-30 renouv.', type: 'action' },
+      { kind: 'Email', label: 'Total cumulé personnalisé', type: 'email' }
+    ],
+    email: {
+      from: 'Body Pass &lt;info@bodypass.ch&gt;',
+      subject: 'Vous avez déjà économisé 247 CHF avec Body Pass',
+      preheader: 'Et il vous reste encore des centaines d\'adresses à découvrir',
+      bodyHTML: `
+        <h1>Bonjour Maria,</h1>
+        <p>Depuis l'achat de votre carte, vous avez déjà profité de plusieurs expériences à -50%.</p>
+        <div class="stat-box">
+          <div class="top-label">VOS ÉCONOMIES TOTALES</div>
+          <div class="big-num">247 CHF</div>
+          <div class="bot-label">sur vos expériences bien-être</div>
+        </div>
+        <p>Et le réseau Body Pass compte encore des centaines d'adresses à découvrir.</p>
+        <a href="#" class="email-cta">Découvrir d'autres adresses</a>
+        <p class="email-ps">P.S. Vous aimez le Passeport Body Pass ? Partagez et recevez 10 CHF.</p>
+        <div class="email-closing">
+          <p>À très vite,</p>
+          <div class="signature">L'équipe Body Pass</div>
+        </div>
+      `
+    },
+    realEmail: '../email-economies-cumulees-A-decouverte.html',
+    realPage: null,
+    htmlPage: null
+  },
+
+  /* ===================================================== */
+  /* === AMORTISSEMENT =================================== */
+  /* ===================================================== */
+  {
+    id: 'amortissement',
+    name: 'Amortissement',
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
+    oneLiner: "Email envoyé au moment précis où un nouveau porteur dépasse 90 CHF d'économies pour la première fois.",
+    pourQui: "Nouveaux porteurs (moins de 3 visites lifetime) qui viennent de franchir le seuil de rentabilité de leur carte.",
+    pourQuoi: "Moment psychologique fort : la carte vient de se rembourser toute seule. C'est l'instant idéal pour féliciter et proposer une suite, créant une boucle de fidélisation.",
+    commentMarche: "Le pipeline du matin identifie les porteurs qui ce jour-là viennent de dépasser 90 CHF (alors qu'ils étaient en dessous la veille). Une étiquette « amortissement_pending » est posée. Mailchimp envoie immédiatement l'email, puis pose l'étiquette « amortissement_envoyé » pour ne plus jamais relancer cette personne.",
+    frequence: "Déclenchement à l'événement (une seule fois par porteur)",
+    audience: "Variable — quelques porteurs par semaine",
+    statutLong: "Template email validé, Customer Journey Mailchimp configuré. Reste à brancher le workflow de pose d'étiquette dans le pipeline quotidien.",
+    journey: [
+      { kind: 'Déclencheur', label: 'Économies dépassent 90 CHF', type: 'trigger' },
+      { kind: 'Filtre', label: 'Moins de 3 visites + carte active', type: 'action' },
+      { kind: 'Étiquette', label: 'Pose « amorti_pending »', type: 'action' },
+      { kind: 'Email', label: '« Bravo, c\'est amorti ! »', type: 'email' },
+      { kind: 'Étiquette', label: 'Pose « amortissement_envoyé »', type: 'action' }
+    ],
+    email: {
+      from: 'Body Pass &lt;info@bodypass.ch&gt;',
+      subject: 'Bonne nouvelle, votre carte est déjà rentabilisée',
+      preheader: 'Grâce à vos dernières expériences, vous avez déjà économisé plus que le prix de votre carte',
+      bodyHTML: `
+        <h1>Bonne nouvelle Maria,</h1>
+        <p>Votre carte Body Pass est déjà rentabilisée. Grâce à vos dernières expériences, vous avez économisé plus que le prix de votre carte.</p>
+        <div class="stat-box">
+          <div class="top-label">VOS ÉCONOMIES</div>
+          <div class="big-num">127 CHF</div>
+          <div class="bot-label">sur vos expériences bien-être</div>
+        </div>
+        <p>On est ravis. Nous avons à coeur de vous faire découvrir les plus belles expériences du réseau.</p>
+        <a href="#" class="email-cta">Continuer à explorer</a>
+        <p class="email-ps">P.S. Vous aimez le Passeport Body Pass ? Partagez et recevez 10 CHF.</p>
+        <div class="email-closing">
+          <p>À très vite,</p>
+          <div class="signature">L'équipe Body Pass</div>
+        </div>
+      `
+    },
+    realEmail: '../email-amortissement-final.html',
+    realPage: null,
+    htmlPage: null
+  },
+
+  /* ===================================================== */
+  /* === UTILISATION J+30 ================================ */
+  /* ===================================================== */
+  {
+    id: 'utilisation-30d',
+    name: 'Utilisation J+30',
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
+    oneLiner: "30 jours pile après la dernière visite, on relance avec une page de 3 recommandations sur-mesure.",
+    pourQui: "Porteurs actifs n'ayant pas visité depuis exactement 30 jours, avec plus de 60 jours avant l'échéance de leur carte.",
+    pourQuoi: "Plus un porteur utilise sa carte, plus il la renouvelle. Cette campagne réveille les porteurs qui commencent à ralentir, avant que l'inactivité ne s'installe.",
+    commentMarche: "Chaque matin, le pipeline détecte les porteurs à J+30 pile. Une page personnelle est préparée avec leur dernière visite et 3 recommandations (même catégorie / même canton / nouveauté). Mailchimp envoie l'email avec le lien unique.",
+    frequence: "Quotidien, automatique",
+    audience: "Variable selon les visites de J-30 (26 porteurs identifiés au dernier run)",
+    statutLong: "Pipeline tag-based déployé : branche n8n (7 nœuds) qui pose le tag `utilisation_j30_pending` chaque matin sur les porteurs concernés. Customer Journey Mailchimp configuré, template email avec lien personnel prêt, page perso avec 4 cartes (dernière visite + 3 recommandations) figée côté GitHub Pages. 200 descriptifs d'établissements scrapés et nettoyés. Premier blast réel imminent.",
+    journey: [
+      { kind: 'Déclencheur', label: 'J+30 après dernière visite', type: 'trigger' },
+      { kind: 'Calcul', label: '3 recos personnalisées', type: 'action' },
+      { kind: 'Publication', label: 'Page perso sur GitHub Pages', type: 'action' },
+      { kind: 'Email', label: '« Votre prochaine pause vous attend »', type: 'email' }
+    ],
+    email: {
+      from: 'Body Pass &lt;info@bodypass.ch&gt;',
+      subject: 'Votre prochaine pause bien-être vous attend',
+      preheader: 'Cela fait 30 jours depuis Royal Savoy — on vous a préparé une sélection',
+      bodyHTML: `
+        <h1>Bonjour Maria,</h1>
+        <p>Votre prochaine pause bien-être vous attend. Cela fait déjà 30 jours depuis votre passage au <strong>Royal Savoy</strong>.</p>
+        <p>On vous a préparé une sélection rien que pour vous, avec des expériences qu'on pense que vous allez adorer.</p>
+        <a href="#" class="email-cta">Voir ma sélection</a>
+        <div class="email-closing">
+          <p>À très vite,</p>
+          <div class="signature">L'équipe Body Pass</div>
+        </div>
+      `
+    },
+    realEmail: '../email-utilisation.html',
+    realPage: 'https://bodypass-ch.github.io/utilisation-30d/',
+    htmlPage: {
+      url: 'bodypass-ch.github.io/utilisation-30d/?t=a3f9c2b',
+      contentHTML: `
+        <h1 style="font-size: 1.35rem; margin-bottom: 0.4rem;">Bonjour Maria,</h1>
+        <p style="font-size: 0.8rem;">Votre prochaine pause bien-être vous attend.</p>
+        <p style="font-size: 0.72rem; color: var(--text-soft); margin-bottom: 1rem;">Cela fait 30 jours depuis votre passage au Royal Savoy.</p>
+        <div class="reco-hero">
+          <div class="photo"></div>
+          <div class="info">
+            <div class="cat">VOTRE DERNIÈRE VISITE</div>
+            <h3>Royal Savoy</h3>
+            <div class="meta">Spa & Hammam · Lausanne · 21 avril 2026</div>
+            <div style="margin-top: 0.6rem;"><span style="background: var(--burgundy); color: var(--white); padding: 0.35rem 0.9rem; font-size: 0.7rem; border-radius: 3px;">Y retourner</span></div>
+          </div>
+        </div>
+        <p style="font-size: 0.7rem; color: var(--burgundy); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin: 0.8rem 0 0.5rem;">Nos suggestions pour vous</p>
+        <div class="reco-mini-grid">
+          <div class="reco-mini"><div class="ph"></div><div class="info"><div class="nm">Lausanne Palace Spa</div><div class="ct">Spa 5★</div></div></div>
+          <div class="reco-mini"><div class="ph"></div><div class="info"><div class="nm">Bain Bleu Genève</div><div class="ct">Bains</div></div></div>
+          <div class="reco-mini"><div class="ph"></div><div class="info"><div class="nm">Hôtel National</div><div class="ct">Spa</div></div></div>
+        </div>
+      `
+    }
+  },
+
+  /* ===================================================== */
+  /* === BILAN MENSUEL =================================== */
+  /* ===================================================== */
+  {
+    id: 'bilan-mensuel',
+    name: 'Bilan mensuel',
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
+    oneLiner: "Format Spotify-Wrapped : un bilan visuel des 30 derniers jours du porteur, avec 3 idées pour la suite.",
+    pourQui: "Les porteurs actifs ayant visité au moins une fois sur les 30 derniers jours. Environ 564 contacts actuellement.",
+    pourQuoi: "Renforcer le sentiment qu'on connaît leur historique. Combiner ancrage de valeur (chiffres du mois) et extension d'usage (3 propositions).",
+    commentMarche: "La veille de l'envoi, le système prépare une page personnelle pour chaque porteur (visites, top catégorie, économies, 3 recos). Le jour J, Mailchimp envoie l'email avec le lien vers cette page.",
+    frequence: "Mensuel — idéalement le 15 de chaque mois",
+    audience: "384 destinataires réels (564 contacts dans le segment)",
+    statutLong: "Workflow n8n complet construit et déployé (branche Bilan greffée à bp-moteur-campagnes). Template Mailchimp prêt (campaign_id 18177724), segment prêt, mode test (dry_run) actif comme garde-fou. Idéalement envoyée le 15 de chaque mois, pour ne pas faire doublon avec Économies cumulées qui part le 1<sup>er</sup>. Reste : test end-to-end en dry-run, puis basculer le garde-fou pour démarrer le cycle mensuel automatique.",
+    journey: [
+      { kind: 'Déclencheur', label: 'Veille du jour J — préparation', type: 'trigger' },
+      { kind: 'Calcul', label: 'Stats 30j glissants + 3 recos', type: 'action' },
+      { kind: 'Publication', label: 'Page perso sur GitHub Pages', type: 'action' },
+      { kind: 'Email', label: 'Envoi mensuel automatique', type: 'email' }
+    ],
+    email: {
+      from: 'Body Pass &lt;cedric@bodypass.ch&gt;',
+      subject: 'Votre mois bien-être en un coup d\'œil',
+      preheader: 'Vos visites, vos économies, et 3 idées pour la suite',
+      bodyHTML: `
+        <h1>Bonjour Maria,</h1>
+        <p>Voici votre mois bien-être en un coup d'œil.</p>
+        <div class="stat-row">
+          <div class="stat-cell"><div class="num">4</div><div class="lbl">visites</div></div>
+          <div class="stat-cell"><div class="num">180</div><div class="lbl">CHF économisés</div></div>
+          <div class="stat-cell"><div class="num">Spa</div><div class="lbl">catégorie favorite</div></div>
+        </div>
+        <p>On vous a préparé un bilan complet avec vos passages du mois, et trois idées pour le mois prochain.</p>
+        <a href="#" class="email-cta">Voir mon bilan complet</a>
+        <div class="email-closing">
+          <p>À très vite,</p>
+          <div class="signature">L'équipe Body Pass</div>
+        </div>
+      `
+    },
+    realEmail: '../email-bilan-mensuel.html',
+    realPage: 'https://bodypass-ch.github.io/bilan-mensuel/?t=demo',
+    htmlPage: {
+      url: 'bodypass-ch.github.io/bilan-mensuel/?t=a3f9c2b',
+      contentHTML: `
+        <img src="assets/logo.png" class="page-logo" alt="Body Pass">
+        <h1 style="font-size: 1.2rem;">Bonjour Maria,<br>voici votre mois bien-être</h1>
+        <div class="bilan-stats">
+          <div class="b-cell"><div class="b-num">4</div><div class="b-lbl">visites</div></div>
+          <div class="b-cell"><div class="b-num">Spa</div><div class="b-lbl">catégorie top</div></div>
+          <div class="b-cell"><div class="b-num">180</div><div class="b-lbl">CHF économisés</div></div>
+        </div>
+        <p style="font-size: 0.7rem; color: var(--burgundy); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-top: 1rem;">Vos passages ce mois-ci</p>
+        <div class="bilan-visits">
+          <div class="v"><div class="vn">Royal Savoy</div><div class="vd">21 mai</div></div>
+          <div class="v"><div class="vn">Bain Bleu</div><div class="vd">14 mai</div></div>
+          <div class="v"><div class="vn">Lausanne Palace</div><div class="vd">8 mai</div></div>
+          <div class="v"><div class="vn">Hammam Charline</div><div class="vd">2 mai</div></div>
+        </div>
+      `
+    }
+  },
+
+  /* ===================================================== */
+  /* === ACTIVATION ====================================== */
+  /* ===================================================== */
+  {
+    id: 'activation',
+    name: 'Activation',
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
+    oneLiner: "Cible les acheteurs qui n'ont jamais activé leur carte. ~481 personnes dans ce cas en ce moment.",
+    pourQui: "Personnes ayant acheté une carte Body Pass mais n'ayant jamais créé leur profil membre.",
+    pourQuoi: "Ce sont 23,5% des achats — environ 40 000 CHF de cartes payées qui dorment. Sans activation, aucune visite possible, donc 100% de non-renouvellement futur.",
+    commentMarche: "Le pipeline du matin détecte les acheteurs absents de la base membre, leur pose une étiquette technique. Mailchimp envoie le 1er email à J+7, le 2e à J+21. Dès que la personne s'active, elle sort automatiquement de la séquence.",
+    frequence: "Séquence 2 emails (J+7 puis J+21)",
+    audience: "Environ 481 acheteurs taggés actuellement",
+    statutLong: "Branche Activation greffée au pipeline principal et déployée récemment. Environ 481 acheteurs identifiés et taggés automatiquement chaque matin. Customer Journey Mailchimp 13382 prêt avec ses 2 emails (J+7 et J+21), en attente d'activation. Reste : valider le récent run dans le récap email, tester un envoi sur julieta@bodypass.ch, puis basculer le Customer Journey de Brouillon à Actif pour démarrer la séquence.",
+    journey: [
+      { kind: 'Déclencheur', label: 'Achat sans activation détecté', type: 'trigger' },
+      { kind: 'Attente', label: '7 jours', type: 'action' },
+      { kind: 'Email 1', label: '« Activez votre carte »', type: 'email' },
+      { kind: 'Attente', label: '14 jours de plus', type: 'action' },
+      { kind: 'Email 2', label: 'Dernière relance', type: 'email' }
+    ],
+    email: {
+      from: 'Body Pass &lt;info@bodypass.ch&gt;',
+      subject: 'Votre carte Body Pass vous attend',
+      preheader: 'Quelques minutes suffisent pour activer et profiter de votre première visite',
+      bodyHTML: `
+        <h1>Bonjour Maria,</h1>
+        <p>Vous avez votre passeport bien-être en main, mais votre profil n'est pas encore activé.</p>
+        <p>Quelques minutes suffisent pour préparer votre première visite — choisir vos centres d'intérêt, votre canton, et c'est parti. Le réseau Body Pass compte près de 200 adresses sélectionnées, partout en Suisse romande.</p>
+        <a href="#" class="email-cta">Activer ma carte</a>
+        <div class="email-closing">
+          <p>À très vite,</p>
+          <div class="signature">L'équipe Body Pass</div>
+        </div>
+      `
+    },
+    realEmail: '../email-activation-1-j7.html',
+    realPage: null,
+    htmlPage: null
+  },
+
+  /* ===================================================== */
+  /* === NEWLY ACTIVATED ================================= */
+  /* ===================================================== */
+  {
+    id: 'newly-activated',
+    name: 'Newly Activated',
+    status: 'dev',
+    statusLabel: 'En construction',
+    oneLiner: "Email de bienvenue envoyé dès qu'un porteur active sa carte, avec premières adresses adaptées à son profil.",
+    pourQui: "Porteurs qui viennent d'activer leur carte (création récente du profil membre).",
+    pourQuoi: "Convertir l'activation en première visite. Sans premier passage, le porteur ne ressent pas la valeur, et la carte risque de rester inutilisée jusqu'à l'échéance.",
+    commentMarche: "Chaque matin, Mailchimp identifie les porteurs dont la carte a été activée la veille (fenêtre rotative naturelle, sans tag à gérer) et leur envoie un seul email de bienvenue avec un CTA unique vers la sélection d'établissements du réseau.",
+    frequence: "Quotidien, automatique",
+    audience: "Variable — quelques nouveaux activés par jour",
+    statutLong: "Segment Mailchimp Newly Activated créé (zéro tag, fenêtre rotative naturelle basée sur les jours avant expiration). Template email validé : single touch avec CTA unique vers bodypass.ch/selection/. Reste à créer la campagne récurrente côté Mailchimp, vérifier le nom exact du merge field renouvellement dans l'audience, puis tester sur julieta@bodypass.ch avant d'activer le cycle quotidien.",
+    journey: [
+      { kind: 'Déclencheur', label: 'Activation de la carte la veille', type: 'trigger' },
+      { kind: 'Segment', label: 'Filtre fenêtre rotative naturelle', type: 'action' },
+      { kind: 'Email', label: '« Votre carte Body Pass est activée »', type: 'email' }
+    ],
+    email: {
+      from: 'Body Pass &lt;info@bodypass.ch&gt;',
+      subject: 'Votre carte Body Pass est activée',
+      preheader: 'Voici comment en profiter dès maintenant',
+      bodyHTML: `
+        <h1>Votre carte est activée</h1>
+        <p>Bonjour Maria, bienvenue dans le réseau Body Pass. Près de <strong>200 établissements partenaires</strong> en Suisse vous attendent, à -50%.</p>
+        <p>Explorez librement par catégorie, par canton ou par envie.</p>
+        <a href="#" class="email-cta">Découvrir les établissements</a>
+        <p class="email-ps">Une question ? Répondez à cet email, nous lisons tout.</p>
+        <div class="email-closing">
+          <p>À très bientôt,</p>
+          <div class="signature">L'équipe Body Pass</div>
+        </div>
+      `
+    },
+    realEmail: '../email-newly-activated.html',
+    realPage: null,
+    htmlPage: null
+  },
+
+  /* ===================================================== */
+  /* === RENOUVELLEMENT ================================== */
+  /* ===================================================== */
+  {
+    id: 'renouvellement',
+    name: 'Renouvellement',
+    status: 'todo',
+    statusLabel: 'À venir',
+    oneLiner: "3 scénarios (A/B/C) qui couvrent 9 emails autour de l'échéance — le levier business le plus important.",
+    pourQui: "Tous les porteurs dont la carte arrive à échéance. Scénario adapté selon leur usage (gros utilisateur, moyen, dormant).",
+    pourQuoi: "C'est le moment qui pèse le plus sur le CA récurrent. Un porteur qui ne renouvelle pas, c'est 90 CHF qui ne reviennent pas.",
+    commentMarche: "Idée d'architecture : Mailchimp envoie les emails, et un Google Sheet externe sert de mémoire fiable pour suivre où chaque porteur en est dans sa séquence. Garde-fou : maximum 200 envois par jour.",
+    frequence: "Séquence (J-60, J-30, J-15, J+7 selon scénario)",
+    audience: "Variable — tous les porteurs avec échéance approchante",
+    statutLong: "Aucun code écrit. La logique de séquence et de scénarios doit être alignée en interne avant tout développement — c'est la campagne la plus stratégique, on ne se lance pas sans avoir validé l'approche.",
+    journey: [
+      { kind: 'Déclencheur', label: 'Échéance carte approchante', type: 'trigger' },
+      { kind: 'Classification', label: 'Scénario A, B ou C selon usage', type: 'action' },
+      { kind: 'Séquence', label: '3 emails par scénario', type: 'email' },
+      { kind: 'Journal', label: 'Trace dans Google Sheet', type: 'action' }
+    ],
+    email: {
+      from: 'Body Pass &lt;info@bodypass.ch&gt;',
+      subject: 'Votre carte Body Pass arrive à échéance',
+      preheader: 'Cette année avec vous : 8 visites et 312 CHF d\'économies',
+      bodyHTML: `
+        <h1>Bonjour Maria,</h1>
+        <p>Votre carte Body Pass arrive bientôt à terme. Avant de la renouveler, voici un petit bilan de votre année avec nous :</p>
+        <div class="stat-row">
+          <div class="stat-cell"><div class="num">8</div><div class="lbl">visites</div></div>
+          <div class="stat-cell"><div class="num">312</div><div class="lbl">CHF économisés</div></div>
+          <div class="stat-cell"><div class="num">5</div><div class="lbl">adresses visitées</div></div>
+        </div>
+        <p>On vous attend pour une nouvelle année d'expériences bien-être.</p>
+        <a href="#" class="email-cta">Renouveler maintenant</a>
+        <p class="email-ps">P.S. Le tarif fidèle est valable jusqu'au jour de votre échéance.</p>
+        <div class="email-closing">
+          <p>À très vite,</p>
+          <div class="signature">L'équipe Body Pass</div>
+        </div>
+      `
+    },
+    htmlPage: null
+  },
+
+  /* ===================================================== */
+  /* === IDEAS =========================================== */
+  /* ===================================================== */
+  {
+    id: 'ideas',
+    name: 'Ideas',
+    status: 'todo',
+    statusLabel: 'À venir',
+    oneLiner: "Idée d'un canal dédié pour proposer régulièrement de nouvelles découvertes aux porteurs.",
+    pourQui: "À définir en équipe. Possiblement tous les porteurs actifs, ou un segment plus ciblé selon l'objectif retenu.",
+    pourQuoi: "Donner un rendez-vous régulier d'inspiration sur le réseau Body Pass. La question business à trancher avant tout développement : est-ce qu'on a besoin d'un canal séparé pour ça, ou est-ce que les 3 recommandations déjà incluses dans Bilan mensuel et Utilisation J+30 suffisent à couvrir le besoin ?",
+    commentMarche: "Format à définir en équipe — la mécanique exacte dépendra de la réponse à la question de fond. Pourrait reprendre le même pattern que les autres campagnes personnalisées (page perso avec sélection d'établissements), ou rester plus simple (email éditorial sans personnalisation profonde).",
+    frequence: "À définir — mensuel, saisonnier, ou ad hoc",
+    audience: "À définir",
+    statutLong: "Rien de construit pour l'instant. À clarifier en équipe avant tout travail : quel objectif précis, quelle fréquence, quelle audience, quel format. Surtout, est-ce que cette campagne apporte une valeur distincte par rapport aux recommandations déjà présentes dans Utilisation J+30 et Bilan mensuel ? Si la réponse n'est pas évidente, mieux vaut renforcer les campagnes existantes plutôt que créer un doublon qui sera perçu comme redondant côté porteurs.",
+    journey: [
+      { kind: 'À définir', label: 'Déclencheur ?', type: 'trigger' },
+      { kind: 'À définir', label: 'Mécanique de sélection', type: 'action' },
+      { kind: 'À définir', label: 'Format de l\'email', type: 'email' }
+    ],
+    email: {
+      from: 'Body Pass &lt;info@bodypass.ch&gt;',
+      subject: '[À définir avec l\'équipe]',
+      preheader: '',
+      bodyHTML: `
+        <h1>Format à clarifier</h1>
+        <p>Le contenu et la structure de cette campagne restent à décider en équipe avant tout développement.</p>
+        <p class="email-ps">Question clé : cette campagne apporte-t-elle une valeur distincte par rapport aux recommandations déjà présentes dans Utilisation J+30 et Bilan mensuel, ou risque-t-elle de faire doublon ?</p>
+      `
+    },
+    htmlPage: null
+  }
+];
+
+/* ============================================ */
+/* ==== TABS ================================== */
+/* ============================================ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+/* ============================================ */
+/* ==== CAMPAGNES CARDS ======================= */
+/* ============================================ */
+function renderCampagnes(filter = 'all') {
+  const grid = document.getElementById('campagnesGrid');
+  grid.innerHTML = '';
+  const filtered = filter === 'all' ? campagnes : campagnes.filter(c => c.status === filter);
+  filtered.forEach(c => {
+    const card = document.createElement('button');
+    card.className = 'campagne-card';
+    card.innerHTML = `
+      <span class="badge ${c.status}">${c.statusLabel}</span>
+      <h3>${c.name}</h3>
+      <p class="one-liner">${c.oneLiner}</p>
+      <div class="meta">
+        <span>${c.frequence}</span>
+        <span class="arrow">Voir le détail →</span>
+      </div>
+    `;
+    card.addEventListener('click', () => openModal(c));
+    grid.appendChild(card);
+  });
+}
+renderCampagnes();
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCampagnes(btn.dataset.filter);
+  });
+});
+
+/* ============================================ */
+/* ==== MODAL ================================= */
+/* ============================================ */
+function openModal(c) {
+  const modal = document.getElementById('modal');
+  const content = document.getElementById('modalContent');
+
+  const journeyHTML = c.journey.map((step, i) => {
+    const klass = step.type === 'trigger' ? 'trigger' : step.type === 'email' ? 'email' : '';
+    return `
+      ${i > 0 ? '<div class="j-arrow">→</div>' : ''}
+      <div class="j-step ${klass}">
+        <div class="j-kind">${step.kind}</div>
+        <div class="j-label">${step.label}</div>
+      </div>
+    `;
+  }).join('');
+
+  const hasHtmlPage = !!c.htmlPage;
+  const previewRowClass = hasHtmlPage ? 'preview-row' : 'preview-row single';
+  const emailHTML = emailFrame(c.email);
+  const htmlPageHTML = hasHtmlPage ? browserFrame(c.htmlPage.url, c.htmlPage.contentHTML) : '';
+
+  content.innerHTML = `
+    <div class="modal-head">
+      <button class="modal-close" onclick="closeModal()" aria-label="Fermer">×</button>
+      <span class="badge ${c.status}">${c.statusLabel}</span>
+      <h2 style="margin-top: 0.8rem;">${c.name}</h2>
+      <p style="color: var(--text-soft); margin: 0; font-size: 1rem;">${c.oneLiner}</p>
+    </div>
+    <div class="modal-body">
+
+      <div class="info-grid">
+        <div class="info-cell">
+          <div class="label">Fréquence</div>
+          <div class="value">${c.frequence}</div>
+        </div>
+        <div class="info-cell">
+          <div class="label">Audience</div>
+          <div class="value">${c.audience}</div>
+        </div>
+      </div>
+
+      <div class="modal-block" style="margin-top: 2rem;">
+        <h4>Pour qui</h4>
+        <p>${c.pourQui}</p>
+      </div>
+
+      <div class="modal-block">
+        <h4>Pourquoi cette campagne</h4>
+        <p>${c.pourQuoi}</p>
+      </div>
+
+      <div class="modal-block">
+        <h4>Comment ça marche</h4>
+        <p>${c.commentMarche}</p>
+      </div>
+
+      <div class="modal-block">
+        <h4>${hasHtmlPage ? 'L\'email et la page personnelle' : 'L\'email — exemple avec Maria'}</h4>
+        <div class="${previewRowClass}">
+          <div class="preview-col">
+            <h5>Email reçu par Maria</h5>
+            ${emailHTML}
+          </div>
+          ${hasHtmlPage ? `
+            <div class="preview-col">
+              <h5>Page personnelle (visible en cliquant sur le bouton)</h5>
+              ${htmlPageHTML}
+            </div>
+          ` : ''}
+        </div>
+        <p style="text-align: center; font-size: 0.82rem; color: var(--text-soft); margin-top: 1rem; font-style: italic;">Exemple avec une porteure fictive « Maria ». Les vrais emails reprendront le prénom et les chiffres de chaque destinataire.</p>
+      </div>
+
+      <div class="modal-block">
+        <h4>Le parcours en un coup d'œil</h4>
+        <div class="journey">
+          <div class="journey-flow">${journeyHTML}</div>
+        </div>
+      </div>
+
+      <div class="modal-block">
+        <h4>Statut actuel</h4>
+        <p>${c.statutLong}</p>
+      </div>
+
+    </div>
+  `;
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+
+</body>
+</html>
