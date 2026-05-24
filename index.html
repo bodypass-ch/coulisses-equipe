@@ -1345,11 +1345,11 @@
       </div>
       <div class="entries-list">
 
-        <div class="entry-item">
+        <button class="entry-item clickable" data-target-tab="campagnes" data-target-campaign="hier-notations">
           <span class="entry-cat template">Template</span>
           <h3>Nouveau template pour l'email de notation</h3>
-          <p>On déploie une nouvelle version visuelle du template d'email Hier Notations. Mise en avant du bouton renforcée et cohérence affinée avec la charte Body Pass.</p>
-        </div>
+          <p>On déploie une nouvelle version visuelle du template d'email Hier Notations. Mise en avant du bouton renforcée et cohérence affinée avec la charte Body Pass. Cliquez ici pour voir l'aperçu de l'email.</p>
+        </button>
 
         <div class="entry-item">
           <span class="entry-cat pipeline">Pipeline</span>
@@ -2305,7 +2305,12 @@ document.querySelectorAll('.entry-item.clickable').forEach(item => {
   item.addEventListener('click', () => {
     const tab = item.dataset.targetTab;
     const section = item.dataset.targetSection;
+    const campaignId = item.dataset.targetCampaign;
     if (tab) activateTab(tab, section);
+    if (campaignId) {
+      const c = campagnes.find(x => x.id === campaignId);
+      if (c) setTimeout(() => openModal(c), 200);
+    }
   });
 });
 
