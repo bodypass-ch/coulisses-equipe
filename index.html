@@ -1363,6 +1363,18 @@
           <p>Vérifié : Mailchimp ne permet pas nativement d'enchaîner un envoi le 1<sup>er</sup> de chaque mois sans intervention humaine. Et passer à l'abonnement supérieur ne débloque pas non plus. Conclusion : la récurrence sera gérée par notre propre pipeline, pas côté Mailchimp.</p>
         </div>
 
+        <div class="entry-item">
+          <span class="entry-cat archi">Action terrain</span>
+          <h3>Newly Activated : décompte affiné après croisement avec les données réelles</h3>
+          <p>En croisant les exports avec Mailchimp ce matin, on a vu qu'un porteur activé hier a en réalité 363 jours avant l'échéance, pas 364 comme prévu initialement. Le pipeline a été corrigé en direct pour cibler le bon cohort. La campagne reste en brouillon, en attente du go de l'équipe.</p>
+        </div>
+
+        <div class="entry-item">
+          <span class="entry-cat pipeline">Pipeline</span>
+          <h3>Audit complet du moteur de campagnes : trois petits bugs corrigés</h3>
+          <p>Passage en revue du workflow qui orchestre les envois personnalisés. Trois soucis détectés et corrigés avant qu'ils ne posent problème en production : un mail de monitoring qui partait parfois vide, le récap du Bilan Mensuel qui ne lisait pas la bonne information, et un plafond caché qui aurait coupé l'envoi à 2 000 contacts.</p>
+        </div>
+
       </div>
     </div>
 
@@ -1390,6 +1402,12 @@
           <span class="entry-cat archi">Architecture validée</span>
           <h3>Bienvenue aux nouveaux activés</h3>
           <p>Le segment, le template et la mécanique pour accueillir les porteurs qui viennent d'activer leur carte sont arrêtés. Reste à créer la campagne récurrente côté Mailchimp.</p>
+        </div>
+
+        <div class="entry-item">
+          <span class="entry-cat outil">Rangement</span>
+          <h3>Le projet est rangé proprement</h3>
+          <p>Le dossier de travail est passé d'environ 80 fichiers en vrac à une vingtaine d'entrées top-level. Tout est désormais organisé par dossier thématique (docs, emails, dashboards, données, scripts). Plus facile à naviguer pour toute l'équipe.</p>
         </div>
 
       </div>
