@@ -1797,15 +1797,25 @@ const campagnes = [
     ],
     email: {
       from: 'Body Pass &lt;info@bodypass.ch&gt;',
-      subject: 'Comment s\'est passé votre passage chez Royal Savoy ?',
-      preheader: 'Quelques secondes suffisent pour partager votre avis',
+      subject: 'Comment s\'est passée votre visite chez Royal Savoy ?',
+      preheader: 'Trente secondes pour noter votre visite d\'hier.',
       bodyHTML: `
-        <h1>Bonjour Maria,</h1>
-        <p>Vous êtes passée hier chez <strong>Royal Savoy</strong>. Comment s'est passé ce moment ?</p>
-        <p>Notez votre visite en quelques secondes. Votre avis nous aide à veiller sur la qualité de chaque adresse du réseau Body Pass.</p>
-        <a href="#" class="email-cta">Noter ma visite</a>
+        <div style="width: 24px; height: 1px; background: var(--champagne); margin: 0.3rem auto 0.9rem;"></div>
+        <div style="font-size: 0.55rem; letter-spacing: 0.32em; text-transform: uppercase; color: var(--burgundy); font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.55rem; margin-bottom: 0.9rem;">
+          <span style="width: 4px; height: 4px; background: var(--burgundy); transform: rotate(45deg); display: inline-block;"></span>
+          <span>À propos d'hier</span>
+          <span style="width: 4px; height: 4px; background: var(--burgundy); transform: rotate(45deg); display: inline-block;"></span>
+        </div>
+        <p style="font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 1.55rem; line-height: 1.1; color: var(--title); margin: 0 0 0.9rem 0; font-weight: 400; letter-spacing: -0.005em;">Bonjour, Maria.</p>
+        <p style="font-size: 0.78rem; line-height: 1.55; margin-bottom: 0.7rem; color: var(--text);">Nous espérons que vous avez passé un bon moment hier chez <strong>Royal Savoy Hôtel &amp; Spa</strong>.</p>
+        <p style="font-size: 0.78rem; line-height: 1.55; margin-bottom: 0.8rem; color: var(--text);">Nous aimerions beaucoup connaître votre avis. Votre retour nous aide à maintenir un haut niveau de qualité et à vous proposer des adresses toujours plus proches de ce que vous aimez.</p>
+        <p style="font-size: 0.95rem; letter-spacing: 0.6em; color: var(--champagne); margin: 0.4rem 0 0.3rem;">· · ·</p>
+        <p style="font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 0.92rem; line-height: 1.4; color: var(--title); margin: 0.4rem 0.3rem 0.5rem; font-weight: 400;">«&nbsp;Beauté du lieu, qualité de l'accueil, qualité des soins.&nbsp;»</p>
+        <p style="font-size: 0.55rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 0.9rem; font-weight: 500;">Les trois critères, rien de plus.</p>
+        <a href="#" class="email-cta" style="letter-spacing: 0.22em; text-transform: uppercase; font-size: 0.66rem; padding: 0.7rem 1.6rem;">Donnez-moi un avis</a>
+        <p style="font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 0.72rem; color: var(--text-soft); margin: 0.7rem 0 0.2rem;">30 secondes &middot; une seule fois &middot; anonyme côté établissement</p>
         <div class="email-closing">
-          <p>À très vite,</p>
+          <p style="font-family: 'Playfair Display', Georgia, serif; font-style: italic; color: var(--text); font-size: 0.82rem; margin-bottom: 0.2rem;">Merci d'avance pour votre retour,</p>
           <div class="signature">L'équipe Body Pass</div>
         </div>
       `
