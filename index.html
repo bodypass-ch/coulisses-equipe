@@ -1051,6 +1051,96 @@
     .pipeline-card, .gh-explainer { padding: 1.5rem; }
   }
 
+  /* ============ NOUVEAUTÉS ============ */
+  .day-block {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .day-header {
+    padding: 1.2rem 2rem;
+    background: var(--cream-warm);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .day-date {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3rem;
+    color: var(--title);
+    font-weight: 500;
+  }
+  .day-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--burgundy);
+    font-weight: 600;
+  }
+  .entries-list {
+    padding: 0.5rem 0;
+  }
+  .entry-item {
+    padding: 1.4rem 2rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
+    display: block;
+    text-align: left;
+    width: 100%;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    font-family: inherit;
+    color: inherit;
+    cursor: default;
+  }
+  .entry-item:last-child { border-bottom: none; }
+  .entry-item.clickable {
+    cursor: pointer;
+  }
+  .entry-item.clickable:hover {
+    background: var(--cream);
+  }
+  .entry-cat {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
+  }
+  .entry-cat.template { background: rgba(194, 181, 155, 0.25); color: var(--burgundy-dark); }
+  .entry-cat.pipeline { background: rgba(163, 105, 91, 0.12); color: var(--burgundy); }
+  .entry-cat.contrainte { background: rgba(184, 132, 47, 0.14); color: var(--amber); }
+  .entry-cat.prod { background: rgba(91, 122, 85, 0.14); color: var(--green); }
+  .entry-cat.archi { background: rgba(107, 107, 107, 0.14); color: var(--slate); }
+  .entry-cat.outil { background: rgba(194, 181, 155, 0.3); color: var(--burgundy-dark); }
+  .entry-item h3 {
+    font-size: 1.15rem;
+    margin-bottom: 0.4rem;
+    color: var(--title);
+  }
+  .entry-item.clickable h3::after {
+    content: ' →';
+    color: var(--burgundy);
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    margin-left: 0.3rem;
+  }
+  .entry-item p {
+    font-size: 0.95rem;
+    color: var(--text);
+    margin: 0;
+  }
+
   /* ============ ARCHITECTURE EMBED ============ */
   .architecture-embed {
     position: relative;
@@ -1119,6 +1209,7 @@
 <div class="tabs-wrap">
   <nav class="tabs" role="tablist">
     <button class="tab-btn active" data-tab="overview" role="tab">Vue d'ensemble</button>
+    <button class="tab-btn" data-tab="nouveautes" role="tab">Nouveautés</button>
     <button class="tab-btn" data-tab="pipelines" role="tab">Les pipelines</button>
     <button class="tab-btn" data-tab="campagnes" role="tab">Les campagnes</button>
     <button class="tab-btn" data-tab="github" role="tab">Le coffre GitHub</button>
@@ -1230,6 +1321,77 @@
         <div class="status-name">Ideas</div>
         <div><span class="badge todo">À venir</span></div>
         <div class="status-detail">À discuter en équipe.</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================ -->
+  <!-- =========== NOUVEAUTÉS ===================== -->
+  <!-- ============================================ -->
+  <section class="panel" id="nouveautes">
+
+    <div class="section-intro">
+      <div class="eyebrow">Le journal de bord</div>
+      <h2>Ce qui a bougé, jour après jour</h2>
+      <p>Les avancées, les blocages levés, les décisions prises. Du plus récent en haut, du plus ancien en bas.</p>
+    </div>
+
+    <!-- 24 mai 2026 -->
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-date">24 mai 2026</div>
+        <div class="day-label">Aujourd'hui</div>
+      </div>
+      <div class="entries-list">
+
+        <div class="entry-item">
+          <span class="entry-cat template">Template</span>
+          <h3>Nouveau template pour l'email de notation</h3>
+          <p>On déploie une nouvelle version visuelle du template d'email Hier Notations. Mise en avant du bouton renforcée et cohérence affinée avec la charte Body Pass.</p>
+        </div>
+
+        <div class="entry-item">
+          <span class="entry-cat pipeline">Pipeline</span>
+          <h3>Le pipeline principal est en cours de refonte</h3>
+          <p>On reconstruit le pipeline du matin pour y intégrer la gestion des étiquettes que plusieurs campagnes attendent. Sans ces étiquettes, certains envois automatiques ne savent pas qui inclure et qui exclure.</p>
+        </div>
+
+        <div class="entry-item">
+          <span class="entry-cat contrainte">Contrainte Mailchimp</span>
+          <h3>Mailchimp ne sait pas faire la récurrence mensuelle automatique</h3>
+          <p>Vérifié : Mailchimp ne permet pas nativement d'enchaîner un envoi le 1<sup>er</sup> de chaque mois sans intervention humaine. Et passer à l'abonnement supérieur ne débloque pas non plus. Conclusion : la récurrence sera gérée par notre propre pipeline, pas côté Mailchimp.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 23 mai 2026 -->
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-date">23 mai 2026</div>
+        <div class="day-label">Hier</div>
+      </div>
+      <div class="entries-list">
+
+        <button class="entry-item clickable" data-target-tab="github" data-target-section="carte-interactive">
+          <span class="entry-cat outil">Nouvel outil</span>
+          <h3>Une carte interactive pour expliquer GitHub</h3>
+          <p>Une page interactive est désormais intégrée dans l'onglet « Le coffre GitHub ». Chaque bloc de l'architecture est cliquable et ouvre son détail, avec zoom et déplacement. Cliquez ici pour la voir.</p>
+        </button>
+
+        <div class="entry-item">
+          <span class="entry-cat prod">Mise en route</span>
+          <h3>Utilisation J+30 prête à tourner en autonomie</h3>
+          <p>Le pipeline et la page personnelle pour relancer les porteurs après 30 jours sans visite sont activés. Le premier envoi réel est déclenché cette semaine.</p>
+        </div>
+
+        <div class="entry-item">
+          <span class="entry-cat archi">Architecture validée</span>
+          <h3>Bienvenue aux nouveaux activés</h3>
+          <p>Le segment, le template et la mécanique pour accueillir les porteurs qui viennent d'activer leur carte sont arrêtés. Reste à créer la campagne récurrente côté Mailchimp.</p>
+        </div>
+
       </div>
     </div>
 
@@ -1547,7 +1709,7 @@
       <p><strong>Standard du marché.</strong> Si un nouveau prestataire reprend une partie du projet, il connaît GitHub. Pas de formation, pas de système maison à découvrir.</p>
     </div>
 
-      <div class="gh-explainer">
+      <div class="gh-explainer" id="carte-interactive">
       <h3>Carte interactive du système</h3>
       <p>Une vue d'ensemble cliquable de tout le pipeline : les sources de données, le moteur Python, les pages porteurs, la diffusion Mailchimp. Chaque bloc s'ouvre dans un panneau de détails. Pour explorer confortablement, ouvrez la carte en plein écran.</p>
 
@@ -2118,13 +2280,32 @@ const campagnes = [
 /* ============================================ */
 /* ==== TABS ================================== */
 /* ============================================ */
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
+function activateTab(tabId, scrollToId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const btn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+  const panel = document.getElementById(tabId);
+  if (btn) btn.classList.add('active');
+  if (panel) panel.classList.add('active');
+  if (scrollToId) {
+    setTimeout(() => {
+      const target = document.getElementById(scrollToId);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  } else {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+});
+
+document.querySelectorAll('.entry-item.clickable').forEach(item => {
+  item.addEventListener('click', () => {
+    const tab = item.dataset.targetTab;
+    const section = item.dataset.targetSection;
+    if (tab) activateTab(tab, section);
   });
 });
 
