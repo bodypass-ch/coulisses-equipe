@@ -1167,7 +1167,7 @@
 
     <div class="status-card">
       <div class="status-card-head">
-        <div class="eyebrow">État au 23 mai 2026</div>
+        <div class="eyebrow">État au 24 mai 2026</div>
         <h2>Où en est chaque campagne</h2>
         <p>Cliquez sur l'onglet « Les campagnes » pour le détail.</p>
       </div>
@@ -1199,7 +1199,7 @@
       <div class="status-row">
         <div class="status-name">Utilisation J+30</div>
         <div><span class="badge brouillon">Brouillon prêt</span></div>
-        <div class="status-detail">Pipeline + journey + page perso prêts. Premier blast imminent.</div>
+        <div class="status-detail">Pipeline + journey + page perso prêts. Premier blast déclenché cette semaine.</div>
       </div>
 
       <div class="status-row">
@@ -1840,7 +1840,7 @@ const campagnes = [
     commentMarche: "Chaque matin, le pipeline détecte les porteurs à J+30 pile. Une page personnelle est préparée avec leur dernière visite et 3 recommandations (même catégorie / même canton / nouveauté). Mailchimp envoie l'email avec le lien unique.",
     frequence: "Quotidien, automatique",
     audience: "Variable selon les visites de J-30 (26 porteurs identifiés au dernier run)",
-    statutLong: "Pipeline tag-based déployé : branche n8n (7 nœuds) qui pose le tag `utilisation_j30_pending` chaque matin sur les porteurs concernés. Customer Journey Mailchimp configuré, template email avec lien personnel prêt, page perso avec 4 cartes (dernière visite + 3 recommandations) figée côté GitHub Pages. 200 descriptifs d'établissements scrapés et nettoyés. Premier blast réel imminent.",
+    statutLong: "Pipeline tag-based déployé : branche n8n (7 nœuds) qui pose le tag `utilisation_j30_pending` chaque matin sur les porteurs concernés. Customer Journey Mailchimp configuré, template email avec lien personnel prêt, page perso avec 4 cartes (dernière visite + 3 recommandations) figée côté GitHub Pages. 200 descriptifs d'établissements scrapés et nettoyés. Premier blast réel déclenché cette semaine.",
     journey: [
       { kind: 'Déclencheur', label: 'J+30 après dernière visite', type: 'trigger' },
       { kind: 'Calcul', label: '3 recos personnalisées', type: 'action' },
