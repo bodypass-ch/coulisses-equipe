@@ -1308,13 +1308,13 @@
       <div class="status-row">
         <div class="status-name">Newly Activated</div>
         <div><span class="badge brouillon">Brouillon prêt</span></div>
-        <div class="status-detail">Flux automatique créé en brouillon côté Mailchimp, étiquette branchée dans le pipeline du matin. Reste à tester puis activer.</div>
+        <div class="status-detail">Étiquettes posées automatiquement par le pipeline du matin, flux Mailchimp monté en brouillon. Reste un test sur julieta puis activation.</div>
       </div>
 
       <div class="status-row">
         <div class="status-name">Renouvellement</div>
-        <div><span class="badge brouillon">Brouillon prêt</span></div>
-        <div class="status-detail">Architecture simplifiée validée (tout natif Mailchimp). Templates prêts. Reste à créer les segments et les flux côté Mailchimp.</div>
+        <div><span class="badge dev">En construction</span></div>
+        <div class="status-detail">Tous les textes écrits, tous les emails dessinés, logique validée. Flux 1 monté dans Mailchimp, Flux 2 et 3 en cours de montage.</div>
       </div>
 
       <div class="status-row">
@@ -1335,6 +1335,29 @@
       <div class="eyebrow">Le journal de bord</div>
       <h2>Ce qui a bougé, jour après jour</h2>
       <p>Les avancées, les blocages levés, les décisions prises. Du plus récent en haut, du plus ancien en bas.</p>
+    </div>
+
+    <!-- 25 mai 2026 -->
+    <div class="day-block">
+      <div class="day-header">
+        <div class="day-date">25 mai 2026</div>
+        <div class="day-label">Aujourd'hui</div>
+      </div>
+      <div class="entries-list">
+
+        <button class="entry-item clickable" data-target-tab="campagnes" data-target-campaign="renouvellement">
+          <span class="entry-cat archi">Avancée campagne</span>
+          <h3>Renouvellement : on construit les flux dans Mailchimp</h3>
+          <p>Tous les textes sont écrits, tous les emails sont dessinés, la logique des trois scénarios est validée. Le premier flux est monté dans Mailchimp, les deux autres sont en cours de montage. C'est la campagne la plus stratégique du projet et elle entre dans sa phase d'assemblage. Cliquez ici pour voir le détail.</p>
+        </button>
+
+        <button class="entry-item clickable" data-target-tab="campagnes" data-target-campaign="newly-activated">
+          <span class="entry-cat pipeline">Pipeline</span>
+          <h3>Newly Activated : étiquettes branchées dans le pipeline du matin</h3>
+          <p>Le pipeline du matin pose désormais automatiquement l'étiquette qui déclenche l'email de bienvenue. Le flux Mailchimp est déjà monté en brouillon. Il ne reste qu'un test de réception avant de basculer en production.</p>
+        </button>
+
+      </div>
     </div>
 
     <!-- 24 mai 2026 -->
@@ -2199,7 +2222,7 @@ const campagnes = [
     commentMarche: "Chaque matin, le pipeline du matin pose une étiquette technique sur les porteurs activés la veille. Mailchimp détecte cette étiquette et envoie automatiquement un email de bienvenue avec un CTA unique vers la sélection d'établissements du réseau. L'étiquette n'est posée qu'une seule fois par porteur, donc aucun risque de double envoi.",
     frequence: "Quotidien, automatique",
     audience: "Variable — quelques nouveaux activés par jour",
-    statutLong: "Architecture pivotée vers une mécanique à étiquette (plus robuste que la fenêtre rotative initiale, car elle garantit un envoi unique par porteur). Le pipeline du matin pose l'étiquette `newly_activated_pending` quand un porteur vient d'activer sa carte. Le flux automatique correspondant est créé dans Mailchimp en brouillon, avec le bon expéditeur, le bon objet et le bon template. Reste à tester en posant manuellement l'étiquette sur julieta@bodypass.ch, valider l'envoi reçu, puis activer le flux pour démarrer en autonomie.",
+    statutLong: "Mécanique à étiquette en place : le pipeline du matin pose désormais automatiquement l'étiquette dédiée sur les porteurs qui viennent d'activer leur carte. Côté Mailchimp, le flux automatique correspondant est entièrement monté en brouillon, avec le bon expéditeur, le bon objet et le bon template. Reste un dernier test en posant manuellement l'étiquette sur julieta@bodypass.ch, puis activer le flux pour démarrer en autonomie.",
     journey: [
       { kind: 'Déclencheur', label: 'Activation de la carte la veille', type: 'trigger' },
       { kind: 'Segment', label: 'Filtre fenêtre rotative naturelle', type: 'action' },
@@ -2232,15 +2255,15 @@ const campagnes = [
   {
     id: 'renouvellement',
     name: 'Renouvellement',
-    status: 'brouillon',
-    statusLabel: 'Brouillon prêt',
+    status: 'dev',
+    statusLabel: 'En construction',
     oneLiner: "3 scénarios qui couvrent 6 emails autour de l'échéance — le levier business le plus important.",
     pourQui: "Tous les porteurs dont la carte arrive à échéance. Scénario adapté selon leur usage (gros utilisateur, moyen, dormant).",
     pourQuoi: "C'est le moment qui pèse le plus sur le CA récurrent. Un porteur qui ne renouvelle pas, c'est 90 CHF qui ne reviennent pas.",
     commentMarche: "Architecture 100% native Mailchimp : 3 flux automatiques, un par scénario, avec 2 emails par flux. Le pipeline du matin met à jour les jours restants avant échéance, ce qui fait basculer chaque porteur dans le bon flux au bon moment. Quand un porteur renouvelle, ses jours restants repassent à 365 et il sort automatiquement de tous les flux. Pas de Google Sheet, pas de couche custom, tout vit dans Mailchimp.",
     frequence: "Séquence (un email à l'entrée, un second 14 à 18 jours plus tard)",
     audience: "Variable — tous les porteurs avec échéance approchante",
-    statutLong: "Architecture simplifiée validée le 24 mai 2026 : on est passé d'une mécanique complexe (Google Sheet + étiquettes + n8n custom) à du 100% natif Mailchimp avec 3 flux automatiques de 2 emails chacun. Les 6 templates HTML sont prêts. Reste à créer les 3 segments dynamiques et les 3 flux côté Mailchimp, puis aligner en équipe l'URL exacte du bouton renouvellement avant de lancer.",
+    statutLong: "La campagne est très avancée : tous les textes des 6 emails sont écrits, tous les templates HTML sont prêts, et la logique métier (3 scénarios selon le profil d'usage) est validée. Côté Mailchimp, le Flux 1 est entièrement monté. Le Flux 2 et le Flux 3 sont en cours de montage en ce moment. Une fois les trois flux montés, il restera à les tester sur julieta@bodypass.ch puis à les activer pour démarrer en autonomie.",
     journey: [
       { kind: 'Déclencheur', label: 'Entrée dans un des 3 segments échéance', type: 'trigger' },
       { kind: 'Email 1', label: '« Votre carte arrive à échéance »', type: 'email' },
