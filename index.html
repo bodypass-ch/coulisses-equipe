@@ -1258,7 +1258,7 @@
 
     <div class="status-card">
       <div class="status-card-head">
-        <div class="eyebrow">État au 24 mai 2026</div>
+        <div class="eyebrow">État au 25 mai 2026</div>
         <h2>Où en est chaque campagne</h2>
         <p>Cliquez sur l'onglet « Les campagnes » pour le détail.</p>
       </div>
@@ -1307,14 +1307,14 @@
 
       <div class="status-row">
         <div class="status-name">Newly Activated</div>
-        <div><span class="badge dev">En construction</span></div>
-        <div class="status-detail">Segment + email prêts. Reste à créer la campagne récurrente.</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Flux automatique créé en brouillon côté Mailchimp, étiquette branchée dans le pipeline du matin. Reste à tester puis activer.</div>
       </div>
 
       <div class="status-row">
         <div class="status-name">Renouvellement</div>
-        <div><span class="badge todo">À venir</span></div>
-        <div class="status-detail">Logique à aligner avant tout développement.</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Architecture simplifiée validée (tout natif Mailchimp). Templates prêts. Reste à créer les segments et les flux côté Mailchimp.</div>
       </div>
 
       <div class="status-row">
@@ -1341,7 +1341,7 @@
     <div class="day-block">
       <div class="day-header">
         <div class="day-date">24 mai 2026</div>
-        <div class="day-label">Aujourd'hui</div>
+        <div class="day-label">Hier</div>
       </div>
       <div class="entries-list">
 
@@ -1382,7 +1382,7 @@
     <div class="day-block">
       <div class="day-header">
         <div class="day-date">23 mai 2026</div>
-        <div class="day-label">Hier</div>
+        <div class="day-label">Avant-hier</div>
       </div>
       <div class="entries-list">
 
@@ -2191,15 +2191,15 @@ const campagnes = [
   {
     id: 'newly-activated',
     name: 'Newly Activated',
-    status: 'dev',
-    statusLabel: 'En construction',
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
     oneLiner: "Email de bienvenue envoyé dès qu'un porteur active sa carte, avec premières adresses adaptées à son profil.",
     pourQui: "Porteurs qui viennent d'activer leur carte (création récente du profil membre).",
     pourQuoi: "Convertir l'activation en première visite. Sans premier passage, le porteur ne ressent pas la valeur, et la carte risque de rester inutilisée jusqu'à l'échéance.",
-    commentMarche: "Chaque matin, Mailchimp identifie les porteurs dont la carte a été activée la veille (fenêtre rotative naturelle, sans tag à gérer) et leur envoie un seul email de bienvenue avec un CTA unique vers la sélection d'établissements du réseau.",
+    commentMarche: "Chaque matin, le pipeline du matin pose une étiquette technique sur les porteurs activés la veille. Mailchimp détecte cette étiquette et envoie automatiquement un email de bienvenue avec un CTA unique vers la sélection d'établissements du réseau. L'étiquette n'est posée qu'une seule fois par porteur, donc aucun risque de double envoi.",
     frequence: "Quotidien, automatique",
     audience: "Variable — quelques nouveaux activés par jour",
-    statutLong: "Segment Mailchimp Newly Activated créé (zéro tag, fenêtre rotative naturelle basée sur les jours avant expiration). Template email validé : single touch avec CTA unique vers bodypass.ch/selection/. Reste à créer la campagne récurrente côté Mailchimp, vérifier le nom exact du merge field renouvellement dans l'audience, puis tester sur julieta@bodypass.ch avant d'activer le cycle quotidien.",
+    statutLong: "Architecture pivotée vers une mécanique à étiquette (plus robuste que la fenêtre rotative initiale, car elle garantit un envoi unique par porteur). Le pipeline du matin pose l'étiquette `newly_activated_pending` quand un porteur vient d'activer sa carte. Le flux automatique correspondant est créé dans Mailchimp en brouillon, avec le bon expéditeur, le bon objet et le bon template. Reste à tester en posant manuellement l'étiquette sur julieta@bodypass.ch, valider l'envoi reçu, puis activer le flux pour démarrer en autonomie.",
     journey: [
       { kind: 'Déclencheur', label: 'Activation de la carte la veille', type: 'trigger' },
       { kind: 'Segment', label: 'Filtre fenêtre rotative naturelle', type: 'action' },
@@ -2232,20 +2232,20 @@ const campagnes = [
   {
     id: 'renouvellement',
     name: 'Renouvellement',
-    status: 'todo',
-    statusLabel: 'À venir',
-    oneLiner: "3 scénarios (A/B/C) qui couvrent 9 emails autour de l'échéance — le levier business le plus important.",
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
+    oneLiner: "3 scénarios qui couvrent 6 emails autour de l'échéance — le levier business le plus important.",
     pourQui: "Tous les porteurs dont la carte arrive à échéance. Scénario adapté selon leur usage (gros utilisateur, moyen, dormant).",
     pourQuoi: "C'est le moment qui pèse le plus sur le CA récurrent. Un porteur qui ne renouvelle pas, c'est 90 CHF qui ne reviennent pas.",
-    commentMarche: "Idée d'architecture : Mailchimp envoie les emails, et un Google Sheet externe sert de mémoire fiable pour suivre où chaque porteur en est dans sa séquence. Garde-fou : maximum 200 envois par jour.",
-    frequence: "Séquence (J-60, J-30, J-15, J+7 selon scénario)",
+    commentMarche: "Architecture 100% native Mailchimp : 3 flux automatiques, un par scénario, avec 2 emails par flux. Le pipeline du matin met à jour les jours restants avant échéance, ce qui fait basculer chaque porteur dans le bon flux au bon moment. Quand un porteur renouvelle, ses jours restants repassent à 365 et il sort automatiquement de tous les flux. Pas de Google Sheet, pas de couche custom, tout vit dans Mailchimp.",
+    frequence: "Séquence (un email à l'entrée, un second 14 à 18 jours plus tard)",
     audience: "Variable — tous les porteurs avec échéance approchante",
-    statutLong: "Aucun code écrit. La logique de séquence et de scénarios doit être alignée en interne avant tout développement — c'est la campagne la plus stratégique, on ne se lance pas sans avoir validé l'approche.",
+    statutLong: "Architecture simplifiée validée le 24 mai 2026 : on est passé d'une mécanique complexe (Google Sheet + étiquettes + n8n custom) à du 100% natif Mailchimp avec 3 flux automatiques de 2 emails chacun. Les 6 templates HTML sont prêts. Reste à créer les 3 segments dynamiques et les 3 flux côté Mailchimp, puis aligner en équipe l'URL exacte du bouton renouvellement avant de lancer.",
     journey: [
-      { kind: 'Déclencheur', label: 'Échéance carte approchante', type: 'trigger' },
-      { kind: 'Classification', label: 'Scénario A, B ou C selon usage', type: 'action' },
-      { kind: 'Séquence', label: '3 emails par scénario', type: 'email' },
-      { kind: 'Journal', label: 'Trace dans Google Sheet', type: 'action' }
+      { kind: 'Déclencheur', label: 'Entrée dans un des 3 segments échéance', type: 'trigger' },
+      { kind: 'Email 1', label: '« Votre carte arrive à échéance »', type: 'email' },
+      { kind: 'Attente', label: '14 à 18 jours selon scénario', type: 'action' },
+      { kind: 'Email 2', label: 'Relance + bilan personnalisé', type: 'email' }
     ],
     email: {
       from: 'Body Pass &lt;info@bodypass.ch&gt;',
