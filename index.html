@@ -1258,7 +1258,7 @@
 
     <div class="status-card">
       <div class="status-card-head">
-        <div class="eyebrow">État au 4 juin 2026</div>
+        <div class="eyebrow">État au 5 juin 2026</div>
         <h2>Où en est chaque campagne</h2>
         <p>Cliquez sur l'onglet « Les campagnes » pour le détail.</p>
       </div>
@@ -1302,7 +1302,7 @@
       <div class="status-row">
         <div class="status-name">Activation</div>
         <div><span class="badge brouillon">Brouillon prêt</span></div>
-        <div class="status-detail">481 acheteurs taggés. Journey en brouillon (2 emails J+7 et J+21), prêt à activer.</div>
+        <div class="status-detail">481 acheteurs taggés. Flux en brouillon (2 emails, à J+7 puis J+14), prêt à activer. Reste à ajouter les acheteurs manquants dans la liste d'envoi avant l'activation.</div>
       </div>
 
       <div class="status-row">
@@ -1313,8 +1313,8 @@
 
       <div class="status-row">
         <div class="status-name">Renouvellement</div>
-        <div><span class="badge dev">En construction</span></div>
-        <div class="status-detail">Les trois flux sont en place dans Mailchimp et ciblent les bonnes populations. Reste à étoffer le troisième scénario avec deux emails supplémentaires (porteurs déjà engagés).</div>
+        <div><span class="badge brouillon">Brouillon prêt</span></div>
+        <div class="status-detail">Les trois flux sont en place dans Mailchimp, avec deux emails chacun, et ciblent les bonnes populations. Reste un test sur julieta puis activation.</div>
       </div>
 
       <div class="status-row">
@@ -2177,15 +2177,15 @@ const campagnes = [
     oneLiner: "Cible les acheteurs qui n'ont jamais activé leur carte. ~481 personnes dans ce cas en ce moment.",
     pourQui: "Personnes ayant acheté une carte Body Pass mais n'ayant jamais créé leur profil membre.",
     pourQuoi: "Ce sont 23,5% des achats — environ 40 000 CHF de cartes payées qui dorment. Sans activation, aucune visite possible, donc 100% de non-renouvellement futur.",
-    commentMarche: "Le pipeline du matin détecte les acheteurs absents de la base membre, leur pose une étiquette technique. Mailchimp envoie le 1er email à J+7, le 2e à J+21. Dès que la personne s'active, elle sort automatiquement de la séquence.",
-    frequence: "Séquence 2 emails (J+7 puis J+21)",
+    commentMarche: "Le pipeline du matin détecte les acheteurs absents de la base membre, leur pose une étiquette technique. Mailchimp envoie le 1er email à J+7, le 2e à J+14. Dès que la personne s'active, elle sort automatiquement de la séquence.",
+    frequence: "Séquence 2 emails (J+7 puis J+14)",
     audience: "Environ 481 acheteurs taggés actuellement",
-    statutLong: "Branche Activation greffée au pipeline principal et déployée récemment. Environ 481 acheteurs identifiés et taggés automatiquement chaque matin. Customer Journey Mailchimp 13382 prêt avec ses 2 emails (J+7 et J+21), en attente d'activation. Reste : valider le récent run dans le récap email, tester un envoi sur julieta@bodypass.ch, puis basculer le Customer Journey de Brouillon à Actif pour démarrer la séquence.",
+    statutLong: "Branche Activation greffée au pipeline principal et déployée récemment. Environ 481 acheteurs identifiés et taggés automatiquement chaque matin. Le flux Mailchimp est prêt avec ses 2 emails (J+7 et J+14, une semaine d'écart vérifiée), en attente d'activation. Reste : ajouter les acheteurs manquants dans la liste d'envoi (la plupart n'y figurent pas encore), tester un envoi sur julieta@bodypass.ch, puis activer le flux pour démarrer la séquence.",
     journey: [
       { kind: 'Déclencheur', label: 'Achat sans activation détecté', type: 'trigger' },
       { kind: 'Attente', label: '7 jours', type: 'action' },
       { kind: 'Email 1', label: '« Activez votre carte »', type: 'email' },
-      { kind: 'Attente', label: '14 jours de plus', type: 'action' },
+      { kind: 'Attente', label: '7 jours de plus', type: 'action' },
       { kind: 'Email 2', label: 'Dernière relance', type: 'email' }
     ],
     email: {
@@ -2255,15 +2255,15 @@ const campagnes = [
   {
     id: 'renouvellement',
     name: 'Renouvellement',
-    status: 'dev',
-    statusLabel: 'En construction',
+    status: 'brouillon',
+    statusLabel: 'Brouillon prêt',
     oneLiner: "3 scénarios qui couvrent 6 emails autour de l'échéance — le levier business le plus important.",
     pourQui: "Tous les porteurs dont la carte arrive à échéance. Scénario adapté selon leur usage (gros utilisateur, moyen, dormant).",
     pourQuoi: "C'est le moment qui pèse le plus sur le CA récurrent. Un porteur qui ne renouvelle pas, c'est 90 CHF qui ne reviennent pas.",
     commentMarche: "Architecture 100% native Mailchimp : 3 flux automatiques, un par scénario, avec 2 emails par flux. Le pipeline du matin met à jour les jours restants avant échéance, ce qui fait basculer chaque porteur dans le bon flux au bon moment. Quand un porteur renouvelle, ses jours restants repassent à 365 et il sort automatiquement de tous les flux. Pas de Google Sheet, pas de couche custom, tout vit dans Mailchimp.",
     frequence: "Séquence (un email à l'entrée, un second 14 à 18 jours plus tard)",
     audience: "Variable — tous les porteurs avec échéance approchante",
-    statutLong: "Très avancée : les trois flux sont en place dans Mailchimp et ciblent les bonnes populations (porteurs jamais utilisateurs à J-60, jamais utilisateurs à J-30, et utilisateurs engagés à J-30). La décision a été prise en équipe d'étoffer le troisième scénario, qui s'adresse aux porteurs déjà engagés, avec deux emails supplémentaires : la cible y répond mieux et mérite davantage de présence. Reste à écrire et insérer ces deux emails, puis à tester les trois flux sur julieta@bodypass.ch avant activation.",
+    statutLong: "Très avancée : les trois flux sont en place dans Mailchimp, avec deux emails chacun, et ciblent les bonnes populations (porteurs jamais utilisateurs à J-60, jamais utilisateurs à J-30, et utilisateurs engagés à J-30). Le périmètre est confirmé à deux emails par flux, soit six emails au total. Reste à tester les trois flux sur julieta@bodypass.ch avant activation.",
     journey: [
       { kind: 'Déclencheur', label: 'Entrée dans un des 3 segments échéance', type: 'trigger' },
       { kind: 'Email 1', label: '« Votre carte arrive à échéance »', type: 'email' },
